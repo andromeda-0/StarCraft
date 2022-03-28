@@ -77,7 +77,7 @@ def get_coma_args(args):
     return args
 
 
-# arguments of vnd、 qmix、 qtran
+# arguments of vdn、 qmix、 qtran
 def get_mixer_args(args):
     # network
     args.rnn_hidden_dim = 64

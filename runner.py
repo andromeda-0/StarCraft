@@ -21,7 +21,7 @@ class Runner:
             self.rolloutWorker = RolloutWorker(env, self.agents, args)
         if not args.evaluate and args.alg.find('coma') == -1 and args.alg.find(
                 'central_v') == -1 and args.alg.find(
-                'reinforce') == -1:  # these 3 algorithms are on-poliy
+                'reinforce') == -1:  # these 3 algorithms are on-policy
             self.buffer = ReplayBuffer(args)
         self.args = args
         self.win_rates = []
