@@ -1,6 +1,4 @@
-import warnings
-
-from gym_multigrid.envs.yellow_study_3 import StarCraftAPI
+from gym_multigrid.envs.star_craft import *
 
 from common.arguments import get_centralv_args, get_coma_args, get_commnet_args, get_common_args, \
     get_g2anet_args, get_mixer_args, get_reinforce_args
@@ -23,7 +21,7 @@ if __name__ == '__main__':
             args = get_commnet_args(args)
         if args.alg.find('g2anet') > -1:
             args = get_g2anet_args(args)
-        env = StarCraftAPI()
+        env = eval(args.map + '()')
         env_info = env.get_configurations()
         args.n_actions = env_info["n_actions"]
         args.n_agents = env_info["n_agents"]
