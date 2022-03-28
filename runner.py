@@ -67,7 +67,7 @@ class Runner:
                     self.buffer.store_episode(episode_batch)
                     for train_step in range(self.args.train_steps):
                         mini_batch = self.buffer.sample(
-                            min(self.buffer.current_size, self.args.batch_size))
+                                min(self.buffer.current_size, self.args.batch_size))
                         self.agents.train(mini_batch, train_steps)
                         train_steps += 1
         win_rate, episode_reward = self.evaluate()
@@ -79,7 +79,7 @@ class Runner:
     def evaluate(self):
         win_number = 0
         episode_rewards = 0
-        for epoch in range(self.args.evaluate_epoch):
+        for epoch in tqdm(range(self.args.evaluate_epoch)):
             _, episode_reward, win_tag, _ = self.rolloutWorker.generate_episode(epoch,
                                                                                 evaluate=True)
             episode_rewards += episode_reward
