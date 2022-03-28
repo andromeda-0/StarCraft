@@ -1,4 +1,5 @@
 import torch
+import torch.nn.functional
 import os
 from network.base_net import RNN, Critic
 from network.commnet import CommNet
@@ -70,7 +71,8 @@ class CentralV:
         # 学习过程中，要为每个episode的每个agent都维护一个eval_hidden
         self.eval_hidden = None
 
-    def learn(self, batch, max_episode_len, train_step, epsilon):  # train_step表示是第几次学习，用来控制更新target_net网络的参数
+    def learn(self, batch, max_episode_len, train_step,
+              epsilon):  # train_step表示是第几次学习，用来控制更新target_net网络的参数
         episode_num = batch['o'].shape[0]
         self.init_hidden(episode_num)
         for key in batch.keys():  # 把batch里的数据转化成tensor
@@ -78,8 +80,9 @@ class CentralV:
                 batch[key] = torch.tensor(batch[key], dtype=torch.long)
             else:
                 batch[key] = torch.tensor(batch[key], dtype=torch.float32)
-        u, r, avail_u, terminated = batch['u'], batch['r'],  batch['avail_u'], batch['terminated']
-        mask = (1 - batch["padded"].float()).repeat(1, 1, self.n_agents)  # 用来把那些填充的经验的TD-error置0，从而不让它们影响到学习
+        u, r, avail_u, terminated = batch['u'], batch['r'], batch['avail_u'], batch['terminated']
+        mask = (1 - batch["padded"].float()).repeat(1, 1,
+                                                    self.n_agents)  # 用来把那些填充的经验的TD-error置0，从而不让它们影响到学习
         if self.args.cuda:
             u = u.cuda()
             mask = mask.cuda()
@@ -125,8 +128,7 @@ class CentralV:
         # 取出所有episode上该transition_idx的经验，u_onehot要取出所有，因为要用到上一条
         obs, u_onehot = batch['o'][:, transition_idx], batch['u_onehot'][:]
         episode_num = obs.shape[0]
-        inputs = []
-        inputs.append(obs)
+        inputs = [obs]
         # 给inputs添加上一个动作、agent编号
 
         if self.args.last_action:
@@ -153,7 +155,8 @@ class CentralV:
             if self.args.cuda:
                 inputs = inputs.cuda()
                 self.eval_hidden = self.eval_hidden.cuda()
-            outputs, self.eval_hidden = self.eval_rnn(inputs, self.eval_hidden)  # inputs维度为(40,96)，得到的q_eval维度为(40,n_actions)
+            outputs, self.eval_hidden = self.eval_rnn(inputs,
+                                                      self.eval_hidden)  # inputs维度为(40,96)，得到的q_eval维度为(40,n_actions)
             # 把q_eval维度重新变回(8, 5,n_actions)
             outputs = outputs.view(episode_num, self.n_agents, -1)
             prob = torch.nn.functional.softmax(outputs, dim=-1)
@@ -162,8 +165,11 @@ class CentralV:
         # 把该列表转化成(episode个数, max_episode_len， n_agents，n_actions)的数组
         action_prob = torch.stack(action_prob, dim=1).cpu()
 
-        action_num = avail_actions.sum(dim=-1, keepdim=True).float().repeat(1, 1, 1, avail_actions.shape[-1])   # 可以选择的动作的个数
-        action_prob = ((1 - epsilon) * action_prob + torch.ones_like(action_prob) * epsilon / action_num)
+        action_num = avail_actions.sum(dim=-1, keepdim=True).float().repeat(1, 1, 1,
+                                                                            avail_actions.shape[
+                                                                                -1])  # 可以选择的动作的个数
+        action_prob = ((1 - epsilon) * action_prob + torch.ones_like(
+            action_prob) * epsilon / action_num)
         action_prob[avail_actions == 0] = 0.0  # 不能执行的动作概率为0
 
         # 因为上面把不能执行的动作概率置为0，所以概率和不为1了，这里要重新正则化一下。执行过程中Categorical会自己正则化。
@@ -181,7 +187,8 @@ class CentralV:
 
     def _train_critic(self, batch, max_episode_len, train_step):
         r, terminated = batch['r'], batch['terminated']
-        mask = (1 - batch["padded"].float()).repeat(1, 1, self.n_agents)  # 用来把那些填充的经验的TD-error置0，从而不让它们影响到学习
+        mask = (1 - batch["padded"].float()).repeat(1, 1,
+                                                    self.n_agents)  # 用来把那些填充的经验的TD-error置0，从而不让它们影响到学习
         if self.args.cuda:
             mask = mask.cuda()
             r = r.cuda()
@@ -208,4 +215,4 @@ class CentralV:
         if not os.path.exists(self.model_dir):
             os.makedirs(self.model_dir)
         torch.save(self.eval_critic.state_dict(), self.model_dir + '/' + num + '_critic_params.pkl')
-        torch.save(self.eval_rnn.state_dict(),  self.model_dir + '/' + num + '_rnn_params.pkl')
+        torch.save(self.eval_rnn.state_dict(), self.model_dir + '/' + num + '_rnn_params.pkl')
