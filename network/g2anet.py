@@ -60,8 +60,7 @@ class G2ANet(nn.Module):
             input_hard = input_hard.view(self.args.n_agents - 1, -1, self.args.rnn_hidden_dim * 2)
 
             h_hard = torch.zeros((2 * 1, size, self.args.rnn_hidden_dim))  # 因为是双向GRU，每个GRU只有一层，所以第一维是2 * 1
-            if self.args.cuda:
-                h_hard = h_hard.cuda()
+            h_hard = h_hard.to(self.args.device)
             h_hard, _ = self.hard_bi_GRU(input_hard, h_hard)  # (n_agents - 1,batch_size * n_agents,rnn_hidden_dim * 2)
             h_hard = h_hard.permute(1, 0, 2)  # (batch_size * n_agents, n_agents - 1, rnn_hidden_dim * 2)
             h_hard = h_hard.reshape(-1, self.args.rnn_hidden_dim * 2)  # (batch_size * n_agents * (n_agents - 1), rnn_hidden_dim * 2)
@@ -75,8 +74,8 @@ class G2ANet(nn.Module):
 
         else:
             hard_weights = torch.ones((self.args.n_agents, size // self.args.n_agents, 1, self.args.n_agents - 1))
-            if self.args.cuda:
-                hard_weights = hard_weights.cuda()
+
+            hard_weights = hard_weights.to(self.args.device)
 
         # Soft Attention
         q = self.q(h_out).reshape(-1, self.args.n_agents, self.args.attention_dim)  # (batch_size, n_agents, args.attention_dim)

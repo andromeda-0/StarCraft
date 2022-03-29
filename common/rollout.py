@@ -1,12 +1,12 @@
 import numpy as np
 import torch
+from gym_multigrid.envs.star_craft import StarCraftAPI
 from torch.distributions import one_hot_categorical
-import time
 
 
 class RolloutWorker:
     def __init__(self, env, agents, args):
-        self.env = env
+        self.env: StarCraftAPI = env
         self.agents = agents
         self.episode_limit = args.episode_limit
         self.n_actions = args.n_actions
@@ -26,7 +26,6 @@ class RolloutWorker:
         o, u, r, s, avail_u, u_onehot, terminate, padded = [], [], [], [], [], [], [], []
         self.env.reset()
         terminated = False
-        win_tag = False
         step = 0
         episode_reward = 0  # cumulative rewards
         last_action = np.zeros((self.args.n_agents, self.args.n_actions))
@@ -41,8 +40,7 @@ class RolloutWorker:
         if self.args.alg == 'maven':
             state = self.env.get_state()
             state = torch.tensor(state, dtype=torch.float32)
-            if self.args.cuda:
-                state = state.cuda()
+            state = state.to(self.args.device)
             z_prob = self.agents.policy.z_policy(state)
             maven_z = one_hot_categorical.OneHotCategorical(z_prob).sample()
             maven_z = list(maven_z.cpu())
@@ -55,10 +53,13 @@ class RolloutWorker:
             for agent_id in range(self.n_agents):
                 avail_action = self.env.get_avail_agent_actions(agent_id)
                 if self.args.alg == 'maven':
-                    action = self.agents.choose_action(obs[agent_id], last_action[agent_id], agent_id,
+                    # noinspection PyUnboundLocalVariable
+                    action = self.agents.choose_action(obs[agent_id], last_action[agent_id],
+                                                       agent_id,
                                                        avail_action, epsilon, maven_z, evaluate)
                 else:
-                    action = self.agents.choose_action(obs[agent_id], last_action[agent_id], agent_id,
+                    action = self.agents.choose_action(obs[agent_id], last_action[agent_id],
+                                                       agent_id,
                                                        avail_action, epsilon, evaluate)
                 # generate onehot vector of th action
                 action_onehot = np.zeros(self.args.n_actions)
@@ -69,7 +70,6 @@ class RolloutWorker:
                 last_action[agent_id] = action_onehot
 
             reward, terminated, info = self.env.step(actions)
-            win_tag = True if terminated and 'battle_won' in info and info['battle_won'] else False
             o.append(obs)
             s.append(state)
             u.append(np.reshape(actions, [self.n_agents, 1]))
@@ -99,6 +99,8 @@ class RolloutWorker:
         avail_u.append(avail_actions)
         avail_u_next = avail_u[1:]
         avail_u = avail_u[:-1]
+
+        M1 = self.env.get_current_score()
 
         # if step < self.episode_limit，padding
         for i in range(step, self.episode_limit):
@@ -136,7 +138,7 @@ class RolloutWorker:
         if evaluate and episode_num == self.args.evaluate_epoch - 1 and self.args.replay_dir != '':
             self.env.save_replay()
             self.env.close()
-        return episode, episode_reward, win_tag, step
+        return episode, episode_reward, M1, step
 
 
 # RolloutWorker for communication
@@ -162,7 +164,6 @@ class CommRolloutWorker:
         o, u, r, s, avail_u, u_onehot, terminate, padded = [], [], [], [], [], [], [], []
         self.env.reset()
         terminated = False
-        win_tag = False
         step = 0
         episode_reward = 0
         last_action = np.zeros((self.args.n_agents, self.args.n_actions))
@@ -182,7 +183,8 @@ class CommRolloutWorker:
             # choose action for each agent
             for agent_id in range(self.n_agents):
                 avail_action = self.env.get_avail_agent_actions(agent_id)
-                action = self.agents.choose_action(weights[agent_id], avail_action, epsilon, evaluate)
+                action = self.agents.choose_action(weights[agent_id], avail_action, epsilon,
+                                                   evaluate)
 
                 # generate onehot vector of th action
                 action_onehot = np.zeros(self.args.n_actions)
@@ -193,7 +195,6 @@ class CommRolloutWorker:
                 last_action[agent_id] = action_onehot
 
             reward, terminated, info = self.env.step(actions)
-            win_tag = True if terminated and 'battle_won' in info and info['battle_won'] else False
             o.append(obs)
             s.append(state)
             u.append(np.reshape(actions, [self.n_agents, 1]))
@@ -261,4 +262,4 @@ class CommRolloutWorker:
         if evaluate and episode_num == self.args.evaluate_epoch - 1 and self.args.replay_dir != '':
             self.env.save_replay()
             self.env.close()
-        return episode, episode_reward, win_tag, step
+        return episode, episode_reward, self.env.get_current_score(), step

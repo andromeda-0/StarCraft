@@ -8,7 +8,8 @@ class CommNet(nn.Module):
     def __init__(self, input_shape, args):
         super(CommNet, self).__init__()
         self.encoding = nn.Linear(input_shape, args.rnn_hidden_dim)  # 对所有agent的obs解码
-        self.f_obs = nn.GRUCell(args.rnn_hidden_dim, args.rnn_hidden_dim)  # 每个agent根据自己的obs编码得到hidden_state，用于记忆之前的obs
+        self.f_obs = nn.GRUCell(args.rnn_hidden_dim,
+                                args.rnn_hidden_dim)  # 每个agent根据自己的obs编码得到hidden_state，用于记忆之前的obs
         self.f_comm = nn.GRUCell(args.rnn_hidden_dim, args.rnn_hidden_dim)  # 用于通信
         self.decoding = nn.Linear(args.rnn_hidden_dim, args.n_actions)
         self.args = args
@@ -16,7 +17,8 @@ class CommNet(nn.Module):
 
     def forward(self, obs, hidden_state):
         # 先对obs编码
-        obs_encoding = torch.sigmoid(self.encoding(obs))  # .reshape(-1, self.args.n_agents, self.args.rnn_hidden_dim)
+        obs_encoding = torch.sigmoid(
+            self.encoding(obs))  # .reshape(-1, self.args.n_agents, self.args.rnn_hidden_dim)
 
         h_in = hidden_state.reshape(-1, self.args.rnn_hidden_dim)
 
@@ -37,9 +39,9 @@ class CommNet(nn.Module):
                 c = c.repeat(1, self.args.n_agents, 1)  # 此时每个agent都有了所有agent的h
                 # 把每个agent自己的h置0
                 mask = (1 - torch.eye(self.args.n_agents))  # th.eye（）生成一个二维对角矩阵
-                mask = mask.view(-1, 1).repeat(1, self.args.rnn_hidden_dim).view(self.args.n_agents, -1)  # (n_agents, n_agents * rnn_hidden_dim))
-                if self.args.cuda:
-                    mask = mask.cuda()
+                mask = mask.view(-1, 1).repeat(1, self.args.rnn_hidden_dim).view(self.args.n_agents,
+                                                                                 -1)  # (n_agents, n_agents * rnn_hidden_dim))
+                mask = mask.to(self.args.device)
                 c = c * mask.unsqueeze(0)
                 # 因为现在所有agent的h都在最后一维，不能直接加。所以先扩展一维，相加后再去掉
                 c = c.reshape(-1, self.args.n_agents, self.args.n_agents, self.args.rnn_hidden_dim)
@@ -52,4 +54,3 @@ class CommNet(nn.Module):
         weights = self.decoding(h)
 
         return weights, h_out
-

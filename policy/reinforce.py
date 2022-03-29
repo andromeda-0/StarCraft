@@ -33,15 +33,14 @@ class Reinforce:
         else:
             raise Exception("No such algorithm")
 
-        if self.args.cuda:
-            self.eval_rnn.cuda()
+        self.eval_rnn.to(self.args.device)
 
         self.model_dir = args.model_dir + '/' + args.alg + '/' + args.map
         # 如果存在模型则加载模型
         if self.args.load_model:
             if os.path.exists(self.model_dir + '/rnn_params.pkl'):
                 path_rnn = self.model_dir + '/rnn_params.pkl'
-                map_location = 'cuda:0' if self.args.cuda else 'cpu'
+                map_location = self.args.device
                 self.eval_rnn.load_state_dict(torch.load(path_rnn, map_location=map_location))
                 print('Successfully load the model: {}'.format(path_rnn))
             else:
@@ -67,10 +66,10 @@ class Reinforce:
         u, r, avail_u, terminated = batch['u'], batch['r'],  batch['avail_u'], batch['terminated']
         mask = (1 - batch["padded"].float())  # 用来把那些填充的经验的TD-error置0，从而不让它们影响到学习
         if self.args.cuda:
-            r = r.cuda()
-            u = u.cuda()
-            mask = mask.cuda()
-            terminated = terminated.cuda()
+            r = r.to(self.args.device)
+            u = u.to(self.args.device)
+            mask = mask.to(self.args.device)
+            terminated = terminated.to(self.args.device)
 
         # 得到每条经验的return, (episode_num, max_episode_len， n_agents)
         n_return = self._get_returns(r, mask, terminated, max_episode_len)
@@ -134,9 +133,9 @@ class Reinforce:
         action_prob = []
         for transition_idx in range(max_episode_len):
             inputs = self._get_actor_inputs(batch, transition_idx)  # 给obs加last_action、agent_id
-            if self.args.cuda:
-                inputs = inputs.cuda()
-                self.eval_hidden = self.eval_hidden.cuda()
+
+            inputs = inputs.to(self.args.device)
+            self.eval_hidden = self.eval_hidden.to(self.args.device)
             # inputs维度为(episode_num * n_agents,inputs_shape)，得到的outputs维度为(episode_num * n_agents, n_actions)
             outputs, self.eval_hidden = self.eval_rnn(inputs, self.eval_hidden)
             # 把q_eval维度重新变回(8, 5,n_actions)
@@ -157,7 +156,7 @@ class Reinforce:
         # 因此需要再一次将该经验对应的概率置为0
         action_prob[avail_actions == 0] = 0.0
         if self.args.cuda:
-            action_prob = action_prob.cuda()
+            action_prob = action_prob.to(self.args.device)
         return action_prob
 
     def init_hidden(self, episode_num):

@@ -23,18 +23,17 @@ class QMIX:
         self.eval_qmix_net = QMixNet(args)  # 把agentsQ值加起来的网络
         self.target_qmix_net = QMixNet(args)
         self.args = args
-        if self.args.cuda:
-            self.eval_rnn.cuda()
-            self.target_rnn.cuda()
-            self.eval_qmix_net.cuda()
-            self.target_qmix_net.cuda()
+        self.eval_rnn.to(self.args.device)
+        self.target_rnn.to(self.args.device)
+        self.eval_qmix_net.to(self.args.device)
+        self.target_qmix_net.to(self.args.device)
         self.model_dir = args.model_dir + '/' + args.alg + '/' + args.map
         # 如果存在模型则加载模型
         if self.args.load_model:
             if os.path.exists(self.model_dir + '/rnn_net_params.pkl'):
                 path_rnn = self.model_dir + '/rnn_net_params.pkl'
                 path_qmix = self.model_dir + '/qmix_net_params.pkl'
-                map_location = 'cuda:0' if self.args.cuda else 'cpu'
+                map_location = self.args.device
                 self.eval_rnn.load_state_dict(torch.load(path_rnn, map_location=map_location))
                 self.eval_qmix_net.load_state_dict(torch.load(path_qmix, map_location=map_location))
                 print('Successfully load the model: {} and {}'.format(path_rnn, path_qmix))
@@ -77,12 +76,12 @@ class QMIX:
         # 得到每个agent对应的Q值，维度为(episode个数, max_episode_len， n_agents， n_actions)
         q_evals, q_targets = self.get_q_values(batch, max_episode_len)
         if self.args.cuda:
-            s = s.cuda()
-            u = u.cuda()
-            r = r.cuda()
-            s_next = s_next.cuda()
-            terminated = terminated.cuda()
-            mask = mask.cuda()
+            s = s.to(self.args.device)
+            u = u.to(self.args.device)
+            r = r.to(self.args.device)
+            s_next = s_next.to(self.args.device)
+            terminated = terminated.to(self.args.device)
+            mask = mask.to(self.args.device)
         # 取每个agent动作对应的Q值，并且把最后不需要的一维去掉，因为最后一维只有一个值了
         q_evals = torch.gather(q_evals, dim=3, index=u).squeeze(3)
 
@@ -142,11 +141,11 @@ class QMIX:
         q_evals, q_targets = [], []
         for transition_idx in range(max_episode_len):
             inputs, inputs_next = self._get_inputs(batch, transition_idx)  # 给obs加last_action、agent_id
-            if self.args.cuda:
-                inputs = inputs.cuda()
-                inputs_next = inputs_next.cuda()
-                self.eval_hidden = self.eval_hidden.cuda()
-                self.target_hidden = self.target_hidden.cuda()
+
+            inputs = inputs.to(self.args.device)
+            inputs_next = inputs_next.to(self.args.device)
+            self.eval_hidden = self.eval_hidden.to(self.args.device)
+            self.target_hidden = self.target_hidden.to(self.args.device)
             q_eval, self.eval_hidden = self.eval_rnn(inputs, self.eval_hidden)  # inputs维度为(40,96)，得到的q_eval维度为(40,n_actions)
             q_target, self.target_hidden = self.target_rnn(inputs_next, self.target_hidden)
 

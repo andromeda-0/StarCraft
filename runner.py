@@ -24,7 +24,7 @@ class Runner:
                 'reinforce') == -1:  # these 3 algorithms are on-policy
             self.buffer = ReplayBuffer(args)
         self.args = args
-        self.win_rates = []
+        self.M1 = []
         self.episode_rewards = []
 
         # 用来保存plt和pkl
@@ -38,9 +38,8 @@ class Runner:
             while time_steps < self.args.n_steps:
                 print('Run {}, time_steps {}'.format(num, time_steps))
                 if time_steps // self.args.evaluate_cycle > evaluate_steps:
-                    win_rate, episode_reward = self.evaluate()
-                    # print('win_rate is ', win_rate)
-                    self.win_rates.append(win_rate)
+                    M1, episode_reward = self.evaluate()
+                    self.M1.append(M1)
                     self.episode_rewards.append(episode_reward)
                     self.plt(num)
                     evaluate_steps += 1
@@ -70,29 +69,28 @@ class Runner:
                                 min(self.buffer.current_size, self.args.batch_size))
                         self.agents.train(mini_batch, train_steps)
                         train_steps += 1
-        win_rate, episode_reward = self.evaluate()
-        print('win_rate is ', win_rate)
-        self.win_rates.append(win_rate)
+        M1, episode_reward = self.evaluate()
+        print('M1 is ', M1)
+        self.M1.append(M1)
         self.episode_rewards.append(episode_reward)
         self.plt(num)
 
     def evaluate(self):
-        win_number = 0
+        M1_sum = 0
         episode_rewards = 0
         for epoch in tqdm(range(self.args.evaluate_epoch)):
-            _, episode_reward, win_tag, _ = self.rolloutWorker.generate_episode(epoch,
-                                                                                evaluate=True)
+            _, episode_reward, M1, _ = self.rolloutWorker.generate_episode(epoch,
+                                                                           evaluate=True)
             episode_rewards += episode_reward
-            if win_tag:
-                win_number += 1
-        return win_number / self.args.evaluate_epoch, episode_rewards / self.args.evaluate_epoch
+            M1_sum += M1
+        return M1_sum / self.args.evaluate_epoch, episode_rewards / self.args.evaluate_epoch
 
     def plt(self, num):
         plt.figure()
         plt.ylim([0, 105])
         plt.cla()
         plt.subplot(2, 1, 1)
-        plt.plot(range(len(self.win_rates)), self.win_rates)
+        plt.plot(range(len(self.M1)), self.M1)
         plt.xlabel('step*{}'.format(self.args.evaluate_cycle))
         plt.ylabel('win_rates')
 
@@ -102,6 +100,6 @@ class Runner:
         plt.ylabel('episode_rewards')
 
         plt.savefig(self.save_path + '/plt_{}.png'.format(num), format='png')
-        np.save(self.save_path + '/win_rates_{}'.format(num), self.win_rates)
+        np.save(self.save_path + '/M1_{}'.format(num), self.M1)
         np.save(self.save_path + '/episode_rewards_{}'.format(num), self.episode_rewards)
         plt.close()

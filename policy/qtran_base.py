@@ -30,12 +30,11 @@ class QtranBase:
 
         self.v = QtranV(args)
 
-        if self.args.cuda:
-            self.eval_rnn.cuda()
-            self.target_rnn.cuda()
-            self.eval_joint_q.cuda()
-            self.target_joint_q.cuda()
-            self.v.cuda()
+        self.eval_rnn.to(self.args.device)
+        self.target_rnn.to(self.args.device)
+        self.eval_joint_q.to(self.args.device)
+        self.target_joint_q.to(self.args.device)
+        self.v.to(self.args.device)
 
         self.model_dir = args.model_dir + '/' + args.alg + '/' + args.map
         # 如果存在模型则加载模型
@@ -44,7 +43,7 @@ class QtranBase:
                 path_rnn = self.model_dir + '/rnn_net_params.pkl'
                 path_joint_q = self.model_dir + '/joint_q_params.pkl'
                 path_v = self.model_dir + '/v_params.pkl'
-                map_location = 'cuda:0' if self.args.cuda else 'cpu'
+                map_location = self.args.device
                 self.eval_rnn.load_state_dict(torch.load(path_rnn, map_location=map_location))
                 self.eval_joint_q.load_state_dict(torch.load(path_joint_q, map_location=map_location))
                 self.v.load_state_dict(torch.load(path_v, map_location=map_location))
@@ -86,12 +85,12 @@ class QtranBase:
                                                   batch['avail_u_next'], batch['terminated']
         mask = (1 - batch["padded"].float()).squeeze(-1)  # 用来把那些填充的经验的TD-error置0，从而不让它们影响到学习
         if self.args.cuda:
-            u = u.cuda()
-            r = r.cuda()
-            avail_u = avail_u.cuda()
-            avail_u_next = avail_u_next.cuda()
-            terminated = terminated.cuda()
-            mask = mask.cuda()
+            u = u.to(self.args.device)
+            r = r.to(self.args.device)
+            avail_u = avail_u.to(self.args.device)
+            avail_u_next = avail_u_next.to(self.args.device)
+            terminated = terminated.to(self.args.device)
+            mask = mask.to(self.args.device)
         # 得到每个agent对应的Q和hidden_states，维度为(episode个数, max_episode_len， n_agents， n_actions/hidden_dim)
         individual_q_evals, individual_q_targets, hidden_evals, hidden_targets = self._get_individual_q(batch, max_episode_len)
 
@@ -158,11 +157,11 @@ class QtranBase:
         q_evals, q_targets, hidden_evals, hidden_targets = [], [], [], []
         for transition_idx in range(max_episode_len):
             inputs, inputs_next = self._get_individual_inputs(batch, transition_idx)  # 给obs加last_action、agent_id
-            if self.args.cuda:
-                inputs = inputs.cuda()
-                inputs_next = inputs_next.cuda()
-                self.eval_hidden = self.eval_hidden.cuda()
-                self.target_hidden = self.target_hidden.cuda()
+
+            inputs = inputs.to(self.args.device)
+            inputs_next = inputs_next.to(self.args.device)
+            self.eval_hidden = self.eval_hidden.to(self.args.device)
+            self.target_hidden = self.target_hidden.to(self.args.device)
 
             # 要用第一条经验把target网络的hidden_state初始化好，直接用第二条经验传入target网络不对
             if transition_idx == 0:
@@ -221,12 +220,12 @@ class QtranBase:
         states_next = batch['s_next'][:, :max_episode_len]
         u_onehot = batch['u_onehot'][:, :max_episode_len]
         if self.args.cuda:
-            states = states.cuda()
-            states_next = states_next.cuda()
-            u_onehot = u_onehot.cuda()
-            hidden_evals = hidden_evals.cuda()
-            hidden_targets = hidden_targets.cuda()
-            local_opt_actions = local_opt_actions.cuda()
+            states = states.to(self.args.device)
+            states_next = states_next.to(self.args.device)
+            u_onehot = u_onehot.to(self.args.device)
+            hidden_evals = hidden_evals.to(self.args.device)
+            hidden_targets = hidden_targets.to(self.args.device)
+            local_opt_actions = local_opt_actions.to(self.args.device)
         if hat:
             # 神经网络输出的q_eval、q_target、v的维度为(episode_num * max_episode_len, 1)
             q_evals = self.eval_joint_q(states, hidden_evals, local_opt_actions)

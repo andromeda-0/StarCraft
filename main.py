@@ -32,7 +32,7 @@ if __name__ == '__main__':
         if not args.evaluate:
             runner.run(i)
         else:
-            win_rate, _ = runner.evaluate()
-            print('The win rate of {} is  {}'.format(args.alg, win_rate))
+            M1, _ = runner.evaluate()
+            print('The M1 of {} is  {}'.format(args.alg, M1))
             break
         env.close()

@@ -32,13 +32,12 @@ class MAVEN:
         self.mi_net = VarDistribution(args)  # get q(z|sigma(tau))
 
         self.args = args
-        if self.args.cuda:
-            self.z_policy.cuda()
-            self.eval_rnn.cuda()
-            self.target_rnn.cuda()
-            self.eval_qmix_net.cuda()
-            self.target_qmix_net.cuda()
-            self.mi_net.cuda()
+        self.z_policy.to(self.args.device)
+        self.eval_rnn.to(self.args.device)
+        self.target_rnn.to(self.args.device)
+        self.eval_qmix_net.to(self.args.device)
+        self.target_qmix_net.to(self.args.device)
+        self.mi_net.to(self.args.device)
         self.model_dir = args.model_dir + '/' + args.alg + '/' + args.map
         # 如果存在模型则加载模型
         if self.args.load_model:
@@ -47,7 +46,7 @@ class MAVEN:
                 path_rnn = self.model_dir + '/rnn_net_params.pkl'
                 path_qmix = self.model_dir + '/qmix_net_params.pkl'
                 path_mi = self.model_dir + '/mi_net_params.pkl'
-                map_location = 'cuda:0' if self.args.cuda else 'cpu'
+                map_location = self.args.device
                 self.z_policy.load_state_dict(torch.load(path_z_policy, map_location=map_location))
                 self.eval_rnn.load_state_dict(torch.load(path_rnn, map_location=map_location))
                 self.eval_qmix_net.load_state_dict(torch.load(path_qmix, map_location=map_location))
@@ -94,14 +93,14 @@ class MAVEN:
         q_evals, q_targets = self.get_q_values(batch, max_episode_len)
 
         if self.args.cuda:
-            s = s.cuda()
-            u = u.cuda()
-            r = r.cuda()
-            avail_u = avail_u.cuda()
-            s_next = s_next.cuda()
-            terminated = terminated.cuda()
-            mask = mask.cuda()
-            z = z.cuda()
+            s = s.to(self.args.device)
+            u = u.to(self.args.device)
+            r = r.to(self.args.device)
+            avail_u = avail_u.to(self.args.device)
+            s_next = s_next.to(self.args.device)
+            terminated = terminated.to(self.args.device)
+            mask = mask.to(self.args.device)
+            z = z.to(self.args.device)
         # -------------------------------------------------RL Loss------------------------------------------------------
         z_prob = self.z_policy(s[:, 0, :])
         log_z_prob = torch.log(z_prob)
@@ -203,12 +202,12 @@ class MAVEN:
         q_evals, q_targets = [], []
         for transition_idx in range(max_episode_len):
             inputs, inputs_next = self._get_inputs(batch, transition_idx)  # add last_action、agent_id
-            if self.args.cuda:
-                z = z.cuda()
-                inputs = inputs.cuda()
-                inputs_next = inputs_next.cuda()
-                self.eval_hidden = self.eval_hidden.cuda()
-                self.target_hidden = self.target_hidden.cuda()
+
+            z = z.to(self.args.device)
+            inputs = inputs.to(self.args.device)
+            inputs_next = inputs_next.to(self.args.device)
+            self.eval_hidden = self.eval_hidden.to(self.args.device)
+            self.target_hidden = self.target_hidden.to(self.args.device)
             q_eval, self.eval_hidden = self.eval_rnn(inputs, self.eval_hidden, z)
             q_target, self.target_hidden = self.target_rnn(inputs_next, self.target_hidden, z)
 

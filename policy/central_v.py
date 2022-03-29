@@ -38,10 +38,9 @@ class CentralV:
         self.eval_critic = Critic(critic_input_shape, self.args)
         self.target_critic = Critic(critic_input_shape, self.args)
 
-        if self.args.cuda:
-            self.eval_rnn.cuda()
-            self.eval_critic.cuda()
-            self.target_critic.cuda()
+        self.eval_rnn.to(self.args.device)
+        self.eval_critic.to(self.args.device)
+        self.target_critic.to(self.args.device)
 
         self.model_dir = args.model_dir + '/' + args.alg + '/' + args.map
         # 如果存在模型则加载模型
@@ -49,7 +48,7 @@ class CentralV:
             if os.path.exists(self.model_dir + '/rnn_params.pkl'):
                 path_rnn = self.model_dir + '/rnn_params.pkl'
                 path_critic = self.model_dir + '/critic_params.pkl'
-                map_location = 'cuda:0' if self.args.cuda else 'cpu'
+                map_location = self.args.device
                 self.eval_rnn.load_state_dict(torch.load(path_rnn, map_location=map_location))
                 self.eval_critic.load_state_dict(torch.load(path_critic, map_location=map_location))
                 print('Successfully load the model: {} and {}'.format(path_rnn, path_critic))
@@ -84,8 +83,8 @@ class CentralV:
         mask = (1 - batch["padded"].float()).repeat(1, 1,
                                                     self.n_agents)  # 用来把那些填充的经验的TD-error置0，从而不让它们影响到学习
         if self.args.cuda:
-            u = u.cuda()
-            mask = mask.cuda()
+            u = u.to(self.args.device)
+            mask = mask.to(self.args.device)
 
         # 训练critic网络，并且得到每条经验的td_error, (episode_num, max_episode_len, 1)
         td_error = self._train_critic(batch, max_episode_len, train_step)
@@ -111,9 +110,9 @@ class CentralV:
         v_evals, v_targets = [], []
         for transition_idx in range(max_episode_len):
             inputs, inputs_next = batch['s'][:, transition_idx], batch['s_next'][:, transition_idx],
-            if self.args.cuda:
-                inputs = inputs.cuda()
-                inputs_next = inputs_next.cuda()
+
+            inputs = inputs.to(self.args.device)
+            inputs_next = inputs_next.to(self.args.device)
             # 神经网络输入的是(episode_num , state_shape)二维数据，得到的是(episode_num ， 1)二维数据
             v_eval = self.eval_critic(inputs)
             v_target = self.target_critic(inputs_next)
@@ -152,9 +151,9 @@ class CentralV:
         action_prob = []
         for transition_idx in range(max_episode_len):
             inputs = self._get_actor_inputs(batch, transition_idx)  # 给obs加last_action、agent_id
-            if self.args.cuda:
-                inputs = inputs.cuda()
-                self.eval_hidden = self.eval_hidden.cuda()
+
+            inputs = inputs.to(self.args.device)
+            self.eval_hidden = self.eval_hidden.to(self.args.device)
             outputs, self.eval_hidden = self.eval_rnn(inputs,
                                                       self.eval_hidden)  # inputs维度为(40,96)，得到的q_eval维度为(40,n_actions)
             # 把q_eval维度重新变回(8, 5,n_actions)
@@ -178,7 +177,7 @@ class CentralV:
         # 因此需要再一次将该经验对应的概率置为0
         action_prob[avail_actions == 0] = 0.0
         if self.args.cuda:
-            action_prob = action_prob.cuda()
+            action_prob = action_prob.to(self.args.device)
         return action_prob
 
     def init_hidden(self, episode_num):
@@ -190,9 +189,9 @@ class CentralV:
         mask = (1 - batch["padded"].float()).repeat(1, 1,
                                                     self.n_agents)  # 用来把那些填充的经验的TD-error置0，从而不让它们影响到学习
         if self.args.cuda:
-            mask = mask.cuda()
-            r = r.cuda()
-            terminated = terminated.cuda()
+            mask = mask.to(self.args.device)
+            r = r.to(self.args.device)
+            terminated = terminated.to(self.args.device)
         v_evals, v_next_target = self._get_v_values(batch, max_episode_len)
 
         targets = r + self.args.gamma * v_next_target * (1 - terminated)

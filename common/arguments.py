@@ -1,5 +1,7 @@
 import argparse
 
+import torch
+
 """
 Here are the param for the training
 
@@ -43,8 +45,10 @@ def get_common_args():
                         help='whether to load the pretrained model')
     parser.add_argument('--evaluate', type=bool, default=False,
                         help='whether to evaluate the model')
-    parser.add_argument('--cuda', action='store_true', help='whether to use the GPU')
+    parser.add_argument('--device', type=int, help='GPU ID')
     args = parser.parse_args()
+    args.device = torch.device('cuda:' + str(args.device)) if args.device >= 0 else torch.device(
+            'cpu')
     return args
 
 

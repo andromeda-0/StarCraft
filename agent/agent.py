@@ -59,14 +59,14 @@ class Agents:
         inputs = torch.tensor(inputs, dtype=torch.float32).unsqueeze(0)
         avail_actions = torch.tensor(avail_actions, dtype=torch.float32).unsqueeze(0)
         if self.args.cuda:
-            inputs = inputs.cuda()
-            hidden_state = hidden_state.cuda()
+            inputs = inputs.to(self.args.device)
+            hidden_state = hidden_state.to(self.args.device)
 
         # get q value
         if self.args.alg == 'maven':
             maven_z = torch.tensor(maven_z, dtype=torch.float32).unsqueeze(0)
-            if self.args.cuda:
-                maven_z = maven_z.cuda()
+
+            maven_z = maven_z.to(self.args.device)
             q_value, self.policy.eval_hidden[:, agent_num, :] = self.policy.eval_rnn(inputs, hidden_state, maven_z)
         else:
             q_value, self.policy.eval_hidden[:, agent_num, :] = self.policy.eval_rnn(inputs, hidden_state)
@@ -187,8 +187,8 @@ class CommAgents:
             inputs.append(torch.eye(self.args.n_agents))
         inputs = torch.cat([x for x in inputs], dim=1)
         if self.args.cuda:
-            inputs = inputs.cuda()
-            self.policy.eval_hidden = self.policy.eval_hidden.cuda()
+            inputs = inputs.to(self.args.device)
+            self.policy.eval_hidden = self.policy.eval_hidden.to(self.args.device)
         weights, self.policy.eval_hidden = self.policy.eval_rnn(inputs, self.policy.eval_hidden)
         weights = weights.reshape(self.args.n_agents, self.args.n_actions)
         return weights.cpu()
