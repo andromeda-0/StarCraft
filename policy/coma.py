@@ -96,9 +96,9 @@ class COMA:
         u, r, avail_u, terminated = batch['u'], batch['r'], batch['avail_u'], batch['terminated']
         mask = (1 - batch["padded"].float()).repeat(1, 1,
                                                     self.n_agents)  # 用来把那些填充的经验的TD-error置0，从而不让它们影响到学习
-        if self.args.cuda:
-            u = u.to(self.args.device)
-            mask = mask.to(self.args.device)
+
+        u = u.to(self.args.device)
+        mask = mask.to(self.args.device)
         # 根据经验计算每个agent的Ｑ值,从而跟新Critic网络。然后计算各个动作执行的概率，从而计算advantage去更新Actor。
         q_values = self._train_critic(batch, max_episode_len,
                                       train_step)  # 训练critic网络，并且得到每个agent的所有动作的Ｑ值
@@ -263,8 +263,8 @@ class COMA:
         # 因为有许多经验是填充的，它们的avail_actions都填充的是0，所以该经验上所有动作的概率都为0，在正则化的时候会得到nan。
         # 因此需要再一次将该经验对应的概率置为0
         action_prob[avail_actions == 0] = 0.0
-        if self.args.cuda:
-            action_prob = action_prob.to(self.args.device)
+
+        action_prob = action_prob.to(self.args.device)
         return action_prob
 
     def init_hidden(self, episode_num):
@@ -278,10 +278,10 @@ class COMA:
         u_next = torch.cat((u_next, padded_u_next), dim=1)
         mask = (1 - batch["padded"].float()).repeat(1, 1,
                                                     self.n_agents)  # 用来把那些填充的经验的TD-error置0，从而不让它们影响到学习
-        if self.args.cuda:
-            u = u.to(self.args.device)
-            u_next = u_next.to(self.args.device)
-            mask = mask.to(self.args.device)
+
+        u = u.to(self.args.device)
+        u_next = u_next.to(self.args.device)
+        mask = mask.to(self.args.device)
         # 得到每个agent对应的Q值，维度为(episode个数, max_episode_len， n_agents，n_actions)
         # q_next_target为下一个状态-动作对应的target网络输出的Q值，没有包括reward
         q_evals, q_next_target = self._get_q_values(batch, max_episode_len)
@@ -291,8 +291,8 @@ class COMA:
         q_evals = torch.gather(q_evals, dim=3, index=u).squeeze(3)
         q_next_target = torch.gather(q_next_target, dim=3, index=u_next).squeeze(3)
         targets = td_lambda_target(batch, max_episode_len, q_next_target.cpu(), self.args)
-        if self.args.cuda:
-            targets = targets.to(self.args.device)
+
+        targets = targets.to(self.args.device)
         td_error = targets.detach() - q_evals
         masked_td_error = mask * td_error  # 抹掉填充的经验的td_error
 

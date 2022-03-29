@@ -58,9 +58,8 @@ class Agents:
         # transform the shape of inputs from (42,) to (1,42)
         inputs = torch.tensor(inputs, dtype=torch.float32).unsqueeze(0)
         avail_actions = torch.tensor(avail_actions, dtype=torch.float32).unsqueeze(0)
-        if self.args.cuda:
-            inputs = inputs.to(self.args.device)
-            hidden_state = hidden_state.to(self.args.device)
+        inputs = inputs.to(self.args.device)
+        hidden_state = hidden_state.to(self.args.device)
 
         # get q value
         if self.args.alg == 'maven':
@@ -186,9 +185,9 @@ class CommAgents:
         if self.args.reuse_network:
             inputs.append(torch.eye(self.args.n_agents))
         inputs = torch.cat([x for x in inputs], dim=1)
-        if self.args.cuda:
-            inputs = inputs.to(self.args.device)
-            self.policy.eval_hidden = self.policy.eval_hidden.to(self.args.device)
+
+        inputs = inputs.to(self.args.device)
+        self.policy.eval_hidden = self.policy.eval_hidden.to(self.args.device)
         weights, self.policy.eval_hidden = self.policy.eval_rnn(inputs, self.policy.eval_hidden)
         weights = weights.reshape(self.args.n_agents, self.args.n_actions)
         return weights.cpu()

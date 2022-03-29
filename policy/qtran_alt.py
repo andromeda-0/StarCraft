@@ -82,13 +82,13 @@ class QtranAlt:
                                                              batch['r'],  batch['avail_u'], batch['avail_u_next'],\
                                                              batch['terminated']
         mask = 1 - batch["padded"].float().repeat(1, 1, self.n_agents)  # 用来把那些填充的经验的TD-error置0，从而不让它们影响到学习
-        if self.args.cuda:
-            u = u.to(self.args.device)
-            r = r.to(self.args.device)
-            avail_u = avail_u.to(self.args.device)
-            avail_u_next = avail_u_next.to(self.args.device)
-            terminated = terminated.to(self.args.device)
-            mask = mask.to(self.args.device)
+
+        u = u.to(self.args.device)
+        r = r.to(self.args.device)
+        avail_u = avail_u.to(self.args.device)
+        avail_u_next = avail_u_next.to(self.args.device)
+        terminated = terminated.to(self.args.device)
+        mask = mask.to(self.args.device)
         # 得到每个agent对应的Q和hidden_states，维度为(episode个数, max_episode_len， n_agents， n_actions/hidden_dim)
         individual_q_evals, individual_q_targets, hidden_evals, hidden_targets = self._get_individual_q(batch, max_episode_len)
 
@@ -150,8 +150,8 @@ class QtranAlt:
         #   2. 把q_all最后一个维度上当前agent的Q值变成所有agent的Q值，(episode个数, max_episode_len, n_agents, n_agents)
         q_all_chosen = q_all_chosen.view((episode_num, max_episode_len, 1, -1)).repeat(1, 1, self.n_agents, 1)
         q_mask = (1 - torch.eye(self.n_agents)).unsqueeze(0).unsqueeze(0)
-        if self.args.cuda:
-            q_mask = q_mask.to(self.args.device)
+
+        q_mask = q_mask.to(self.args.device)
         q_other_chosen = q_all_chosen * q_mask  # 把每个agent自己的Q值置为0，从而才能相加得到其他agent的Q值之和
         #   3. 求和，同时由于对于当前agent的每个动作，都要和q_other_sum相加，所以把q_other_sum扩展出n_actions维度
         q_other_sum = q_other_chosen.sum(dim=-1, keepdim=True).repeat(1, 1, 1, self.n_actions)
@@ -255,14 +255,14 @@ class QtranAlt:
         action_onehot = torch.eye(self.n_agents).unsqueeze(0).unsqueeze(0).expand(episode_num, max_episode_len, -1, -1)
         s_eval = torch.cat([s, action_onehot], dim=-1)
         s_target = torch.cat([s_next, action_onehot], dim=-1)
-        if self.args.cuda:
-            s_eval = s_eval.to(self.args.device)
-            s_target = s_target.to(self.args.device)
-            v_state = v_state.to(self.args.device)
-            u_onehot = u_onehot.to(self.args.device)
-            hidden_evals = hidden_evals.to(self.args.device)
-            hidden_targets = hidden_targets.to(self.args.device)
-            local_opt_actions = local_opt_actions.to(self.args.device)
+
+        s_eval = s_eval.to(self.args.device)
+        s_target = s_target.to(self.args.device)
+        v_state = v_state.to(self.args.device)
+        u_onehot = u_onehot.to(self.args.device)
+        hidden_evals = hidden_evals.to(self.args.device)
+        hidden_targets = hidden_targets.to(self.args.device)
+        local_opt_actions = local_opt_actions.to(self.args.device)
         if hat:
             # 神经网络输出的q_eval、q_target的维度为(episode_num * max_episode_len * n_agents, n_actions)
             q_evals = self.eval_joint_q(s_eval, hidden_evals, local_opt_actions)

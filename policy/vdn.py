@@ -45,10 +45,10 @@ class VDN:
         self.target_rnn.load_state_dict(self.eval_rnn.state_dict())
         self.target_vdn_net.load_state_dict(self.eval_vdn_net.state_dict())
 
-        self.eval_parameters = list(self.eval_vdn_net.parameters()) + list(self.eval_rnn.parameters())
+        self.eval_parameters = list(self.eval_vdn_net.parameters()) + list(
+            self.eval_rnn.parameters())
         if args.optimizer == "RMS":
             self.optimizer = torch.optim.RMSprop(self.eval_parameters, lr=args.lr)
-
 
         # 执行过程中，要为每个agent都维护一个eval_hidden
         # 学习过程中，要为每个episode的每个agent都维护一个eval_hidden、target_hidden
@@ -56,7 +56,8 @@ class VDN:
         self.target_hidden = None
         print('Init alg VDN')
 
-    def learn(self, batch, max_episode_len, train_step, epsilon=None):  # train_step表示是第几次学习，用来控制更新target_net网络的参数
+    def learn(self, batch, max_episode_len, train_step,
+              epsilon=None):  # train_step表示是第几次学习，用来控制更新target_net网络的参数
         '''
         在learn的时候，抽取到的数据是四维的，四个维度分别为 1——第几个episode 2——episode中第几个transition
         3——第几个agent的数据 4——具体obs维度。因为在选动作时不仅需要输入当前的inputs，还要给神经网络输入hidden_state，
@@ -71,14 +72,14 @@ class VDN:
             else:
                 batch[key] = torch.tensor(batch[key], dtype=torch.float32)
         # TODO pymarl中取得经验没有取最后一条，找出原因
-        u, r, avail_u, avail_u_next, terminated = batch['u'], batch['r'],  batch['avail_u'], \
+        u, r, avail_u, avail_u_next, terminated = batch['u'], batch['r'], batch['avail_u'], \
                                                   batch['avail_u_next'], batch['terminated']
         mask = 1 - batch["padded"].float()  # 用来把那些填充的经验的TD-error置0，从而不让它们影响到学习
-        if self.args.cuda:
-            u = u.to(self.args.device)
-            r = r.to(self.args.device)
-            mask = mask.to(self.args.device)
-            terminated = terminated.to(self.args.device)
+
+        u = u.to(self.args.device)
+        r = r.to(self.args.device)
+        mask = mask.to(self.args.device)
+        terminated = terminated.to(self.args.device)
         # 得到每个agent对应的Q值，维度为(episode个数, max_episode_len， n_agents，n_actions)
         q_evals, q_targets = self.get_q_values(batch, max_episode_len)
 
@@ -131,24 +132,28 @@ class VDN:
             # 即可，比如给agent_0后面加(1, 0, 0, 0, 0)，表示5个agent中的0号。而agent_0的数据正好在第0行，那么需要加的
             # agent编号恰好就是一个单位矩阵，即对角线为1，其余为0
             inputs.append(torch.eye(self.args.n_agents).unsqueeze(0).expand(episode_num, -1, -1))
-            inputs_next.append(torch.eye(self.args.n_agents).unsqueeze(0).expand(episode_num, -1, -1))
+            inputs_next.append(
+                torch.eye(self.args.n_agents).unsqueeze(0).expand(episode_num, -1, -1))
         # 要把obs中的三个拼起来，并且要把episode_num个episode、self.args.n_agents个agent的数据拼成episode_num*n_agents条数据
         # 因为这里所有agent共享一个神经网络，每条数据中带上了自己的编号，所以还是自己的数据
         inputs = torch.cat([x.reshape(episode_num * self.args.n_agents, -1) for x in inputs], dim=1)
-        inputs_next = torch.cat([x.reshape(episode_num * self.args.n_agents, -1) for x in inputs_next], dim=1)
+        inputs_next = torch.cat(
+                [x.reshape(episode_num * self.args.n_agents, -1) for x in inputs_next], dim=1)
         return inputs, inputs_next
 
     def get_q_values(self, batch, max_episode_len):
         episode_num = batch['o'].shape[0]
         q_evals, q_targets = [], []
         for transition_idx in range(max_episode_len):
-            inputs, inputs_next = self._get_inputs(batch, transition_idx)  # 给obs加last_action、agent_id
+            inputs, inputs_next = self._get_inputs(batch,
+                                                   transition_idx)  # 给obs加last_action、agent_id
 
             inputs = inputs.to(self.args.device)
             inputs_next = inputs_next.to(self.args.device)
             self.eval_hidden = self.eval_hidden.to(self.args.device)
             self.target_hidden = self.target_hidden.to(self.args.device)
-            q_eval, self.eval_hidden = self.eval_rnn(inputs, self.eval_hidden)  # 得到的q_eval维度为(episode_num*n_agents, n_actions)
+            q_eval, self.eval_hidden = self.eval_rnn(inputs,
+                                                     self.eval_hidden)  # 得到的q_eval维度为(episode_num*n_agents, n_actions)
             q_target, self.target_hidden = self.target_rnn(inputs_next, self.target_hidden)
 
             # 把q_eval维度重新变回(episode_num, n_agents, n_actions)
@@ -171,5 +176,6 @@ class VDN:
         num = str(train_step // self.args.save_cycle)
         if not os.path.exists(self.model_dir):
             os.makedirs(self.model_dir)
-        torch.save(self.eval_vdn_net.state_dict(), self.model_dir + '/' + num + '_vdn_net_params.pkl')
-        torch.save(self.eval_rnn.state_dict(),  self.model_dir + '/' + num + '_rnn_net_params.pkl')
+        torch.save(self.eval_vdn_net.state_dict(),
+                   self.model_dir + '/' + num + '_vdn_net_params.pkl')
+        torch.save(self.eval_rnn.state_dict(), self.model_dir + '/' + num + '_rnn_net_params.pkl')

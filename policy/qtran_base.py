@@ -84,13 +84,13 @@ class QtranBase:
         u, r, avail_u, avail_u_next, terminated = batch['u'], batch['r'],  batch['avail_u'], \
                                                   batch['avail_u_next'], batch['terminated']
         mask = (1 - batch["padded"].float()).squeeze(-1)  # 用来把那些填充的经验的TD-error置0，从而不让它们影响到学习
-        if self.args.cuda:
-            u = u.to(self.args.device)
-            r = r.to(self.args.device)
-            avail_u = avail_u.to(self.args.device)
-            avail_u_next = avail_u_next.to(self.args.device)
-            terminated = terminated.to(self.args.device)
-            mask = mask.to(self.args.device)
+
+        u = u.to(self.args.device)
+        r = r.to(self.args.device)
+        avail_u = avail_u.to(self.args.device)
+        avail_u_next = avail_u_next.to(self.args.device)
+        terminated = terminated.to(self.args.device)
+        mask = mask.to(self.args.device)
         # 得到每个agent对应的Q和hidden_states，维度为(episode个数, max_episode_len， n_agents， n_actions/hidden_dim)
         individual_q_evals, individual_q_targets, hidden_evals, hidden_targets = self._get_individual_q(batch, max_episode_len)
 
@@ -219,13 +219,13 @@ class QtranBase:
         states = batch['s'][:, :max_episode_len]
         states_next = batch['s_next'][:, :max_episode_len]
         u_onehot = batch['u_onehot'][:, :max_episode_len]
-        if self.args.cuda:
-            states = states.to(self.args.device)
-            states_next = states_next.to(self.args.device)
-            u_onehot = u_onehot.to(self.args.device)
-            hidden_evals = hidden_evals.to(self.args.device)
-            hidden_targets = hidden_targets.to(self.args.device)
-            local_opt_actions = local_opt_actions.to(self.args.device)
+
+        states = states.to(self.args.device)
+        states_next = states_next.to(self.args.device)
+        u_onehot = u_onehot.to(self.args.device)
+        hidden_evals = hidden_evals.to(self.args.device)
+        hidden_targets = hidden_targets.to(self.args.device)
+        local_opt_actions = local_opt_actions.to(self.args.device)
         if hat:
             # 神经网络输出的q_eval、q_target、v的维度为(episode_num * max_episode_len, 1)
             q_evals = self.eval_joint_q(states, hidden_evals, local_opt_actions)

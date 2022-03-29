@@ -82,9 +82,9 @@ class CentralV:
         u, r, avail_u, terminated = batch['u'], batch['r'], batch['avail_u'], batch['terminated']
         mask = (1 - batch["padded"].float()).repeat(1, 1,
                                                     self.n_agents)  # 用来把那些填充的经验的TD-error置0，从而不让它们影响到学习
-        if self.args.cuda:
-            u = u.to(self.args.device)
-            mask = mask.to(self.args.device)
+
+        u = u.to(self.args.device)
+        mask = mask.to(self.args.device)
 
         # 训练critic网络，并且得到每条经验的td_error, (episode_num, max_episode_len, 1)
         td_error = self._train_critic(batch, max_episode_len, train_step)
@@ -176,8 +176,8 @@ class CentralV:
         # 因为有许多经验是填充的，它们的avail_actions都填充的是0，所以该经验上所有动作的概率都为0，在正则化的时候会得到nan。
         # 因此需要再一次将该经验对应的概率置为0
         action_prob[avail_actions == 0] = 0.0
-        if self.args.cuda:
-            action_prob = action_prob.to(self.args.device)
+
+        action_prob = action_prob.to(self.args.device)
         return action_prob
 
     def init_hidden(self, episode_num):
@@ -188,10 +188,10 @@ class CentralV:
         r, terminated = batch['r'], batch['terminated']
         mask = (1 - batch["padded"].float()).repeat(1, 1,
                                                     self.n_agents)  # 用来把那些填充的经验的TD-error置0，从而不让它们影响到学习
-        if self.args.cuda:
-            mask = mask.to(self.args.device)
-            r = r.to(self.args.device)
-            terminated = terminated.to(self.args.device)
+
+        mask = mask.to(self.args.device)
+        r = r.to(self.args.device)
+        terminated = terminated.to(self.args.device)
         v_evals, v_next_target = self._get_v_values(batch, max_episode_len)
 
         targets = r + self.args.gamma * v_next_target * (1 - terminated)

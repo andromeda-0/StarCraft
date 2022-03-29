@@ -71,11 +71,11 @@ class IQL:
 
         # 得到每个agent对应的Q值，维度为(episode个数, max_episode_len， n_agents， n_actions)
         q_evals, q_targets = self.get_q_values(batch, max_episode_len)
-        if self.args.cuda:
-            u = u.to(self.args.device)
-            r = r.to(self.args.device)
-            terminated = terminated.to(self.args.device)
-            mask = mask.to(self.args.device)
+
+        u = u.to(self.args.device)
+        r = r.to(self.args.device)
+        terminated = terminated.to(self.args.device)
+        mask = mask.to(self.args.device)
         # 取每个agent动作对应的Q值，并且把最后不需要的一维去掉，因为最后一维只有一个值了
         q_evals = torch.gather(q_evals, dim=3, index=u).squeeze(3)
 

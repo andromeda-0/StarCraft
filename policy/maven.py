@@ -92,15 +92,15 @@ class MAVEN:
         # 得到每个agent对应的Q值，维度为(episode个数, max_episode_len， n_agents， n_actions)
         q_evals, q_targets = self.get_q_values(batch, max_episode_len)
 
-        if self.args.cuda:
-            s = s.to(self.args.device)
-            u = u.to(self.args.device)
-            r = r.to(self.args.device)
-            avail_u = avail_u.to(self.args.device)
-            s_next = s_next.to(self.args.device)
-            terminated = terminated.to(self.args.device)
-            mask = mask.to(self.args.device)
-            z = z.to(self.args.device)
+
+        s = s.to(self.args.device)
+        u = u.to(self.args.device)
+        r = r.to(self.args.device)
+        avail_u = avail_u.to(self.args.device)
+        s_next = s_next.to(self.args.device)
+        terminated = terminated.to(self.args.device)
+        mask = mask.to(self.args.device)
+        z = z.to(self.args.device)
         # -------------------------------------------------RL Loss------------------------------------------------------
         z_prob = self.z_policy(s[:, 0, :])
         log_z_prob = torch.log(z_prob)
