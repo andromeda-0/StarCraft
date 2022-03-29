@@ -6,7 +6,7 @@ from tqdm import tqdm
 from common.rollout import RolloutWorker, CommRolloutWorker
 from agent.agent import Agents, CommAgents
 from common.replay_buffer import ReplayBuffer
-import matplotlib.pyplot as plt
+from torch.utils.tensorboard import SummaryWriter
 
 
 class Runner:
@@ -32,16 +32,19 @@ class Runner:
         if not os.path.exists(self.save_path):
             os.makedirs(self.save_path)
 
-    def run(self, num):
+        self.writer = None
+
+    def run(self, num_run):
+        self.writer = SummaryWriter(self.save_path + '-run:' + str(num_run))
         time_steps, train_steps, evaluate_steps = 0, 0, -1
         with tqdm(total=self.args.n_steps) as pbar:
             while time_steps < self.args.n_steps:
-                print('Run {}, time_steps {}'.format(num, time_steps))
+                print('Run {}, time_steps {}'.format(num_run, time_steps))
                 if time_steps // self.args.evaluate_cycle > evaluate_steps:
                     M1, episode_reward = self.evaluate()
                     self.M1.append(M1)
                     self.episode_rewards.append(episode_reward)
-                    self.plt(num)
+                    self.plt(time_steps, M1, episode_reward)
                     evaluate_steps += 1
                 episodes = []
                 # 收集self.args.n_episodes个episodes
@@ -73,7 +76,7 @@ class Runner:
         print('M1 is ', M1)
         self.M1.append(M1)
         self.episode_rewards.append(episode_reward)
-        self.plt(num)
+        self.plt(time_steps, M1, episode_reward)
 
     def evaluate(self):
         M1_sum = 0
@@ -85,21 +88,7 @@ class Runner:
             M1_sum += M1
         return M1_sum / self.args.evaluate_epoch, episode_rewards / self.args.evaluate_epoch
 
-    def plt(self, num):
-        plt.figure()
-        plt.ylim([0, 105])
-        plt.cla()
-        plt.subplot(2, 1, 1)
-        plt.plot(range(len(self.M1)), self.M1)
-        plt.xlabel('step*{}'.format(self.args.evaluate_cycle))
-        plt.ylabel('win_rates')
-
-        plt.subplot(2, 1, 2)
-        plt.plot(range(len(self.episode_rewards)), self.episode_rewards)
-        plt.xlabel('step*{}'.format(self.args.evaluate_cycle))
-        plt.ylabel('episode_rewards')
-
-        plt.savefig(self.save_path + '/plt_{}.png'.format(num), format='png')
-        np.save(self.save_path + '/M1_{}'.format(num), self.M1)
-        np.save(self.save_path + '/episode_rewards_{}'.format(num), self.episode_rewards)
-        plt.close()
+    def plt(self, num_steps, M1, episode_reward):
+        self.writer.add_scalar('M1', M1, num_steps)
+        self.writer.add_scalar('Episode_reward', episode_reward, num_steps)
+        self.writer.flush()
