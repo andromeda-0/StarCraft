@@ -39,7 +39,7 @@ class Runner:
         time_steps, train_steps, evaluate_steps = 0, 0, -1
         with tqdm(total=self.args.n_steps) as pbar:
             while time_steps < self.args.n_steps:
-                print('Run {}, time_steps {}'.format(num_run, time_steps))
+                # print('Run {}, time_steps {}'.format(num_run, time_steps))
                 if time_steps // self.args.evaluate_cycle > evaluate_steps:
                     M1, episode_reward = self.evaluate()
                     self.M1.append(M1)
