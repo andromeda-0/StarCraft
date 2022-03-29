@@ -28,14 +28,14 @@ class Runner:
         self.episode_rewards = []
 
         # 用来保存plt和pkl
-        self.save_path = self.args.result_dir + '/' + args.alg + '/' + args.map
+        self.save_path = self.args.result_dir + '/' + args.map + '/' + args.alg
         if not os.path.exists(self.save_path):
             os.makedirs(self.save_path)
 
         self.writer = None
 
     def run(self, num_run):
-        self.writer = SummaryWriter(self.save_path + '-run:' + str(num_run))
+        self.writer = SummaryWriter(self.save_path + '/' + str(num_run))
         time_steps, train_steps, evaluate_steps = 0, 0, -1
         with tqdm(total=self.args.n_steps) as pbar:
             while time_steps < self.args.n_steps:
@@ -81,7 +81,7 @@ class Runner:
     def evaluate(self):
         M1_sum = 0
         episode_rewards = 0
-        for epoch in tqdm(range(self.args.evaluate_epoch)):
+        for epoch in range(self.args.evaluate_epoch):
             _, episode_reward, M1, _ = self.rolloutWorker.generate_episode(epoch,
                                                                            evaluate=True)
             episode_rewards += episode_reward

@@ -39,7 +39,7 @@ def get_common_args():
                         help='number of the epoch to evaluate the agent')
     parser.add_argument('--model_dir', type=str, default='./model',
                         help='model directory of the policy')
-    parser.add_argument('--result_dir', type=str, default='./result',
+    parser.add_argument('--result_dir', type=str, default='./runs',
                         help='result directory of the policy')
     parser.add_argument('--load_model', type=bool, default=False,
                         help='whether to load the pretrained model')
@@ -47,6 +47,7 @@ def get_common_args():
                         help='whether to evaluate the model')
     parser.add_argument('--device', type=int, help='GPU ID', default='0')
     args = parser.parse_args()
+    # noinspection PyTypeChecker
     args.device = torch.device('cuda:' + str(args.device)) if args.device >= 0 else torch.device(
             'cpu')
     return args
