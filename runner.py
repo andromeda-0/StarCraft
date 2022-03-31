@@ -52,7 +52,7 @@ class Runner:
                     episode, _, _, steps = self.rolloutWorker.generate_episode(episode_idx)
                     episodes.append(episode)
                     time_steps += steps
-                    pbar.update(time_steps)
+                    pbar.update(steps)
                     # print(_)
                 # episode的每一项都是一个(1, episode_len, n_agents, 具体维度)四维数组，下面要把所有episode的的obs拼在一起
                 episode_batch = episodes[0]
