@@ -11,7 +11,6 @@ Here are the param for the training
 def get_common_args():
     parser = argparse.ArgumentParser()
     # the environment setting
-    parser.add_argument('--difficulty', type=str, default='7', help='the difficulty of the game')
     parser.add_argument('--game_version', type=str, default='latest',
                         help='the version of the game')
     parser.add_argument('--map', type=str, default='YellowEnv3', help='the map of the game')
