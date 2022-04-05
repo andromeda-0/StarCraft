@@ -69,7 +69,7 @@ class RolloutWorker:
                 avail_actions.append(avail_action)
                 last_action[agent_id] = action_onehot
 
-            reward, terminated, info = self.env.step(actions)
+            reward, terminated, info = self.env.step_sc(actions)
             o.append(obs)
             s.append(state)
             u.append(np.reshape(actions, [self.n_agents, 1]))
@@ -194,7 +194,7 @@ class CommRolloutWorker:
                 avail_actions.append(avail_action)
                 last_action[agent_id] = action_onehot
 
-            reward, terminated, info = self.env.step(actions)
+            reward, terminated, info = self.env.step_sc(actions)
             o.append(obs)
             s.append(state)
             u.append(np.reshape(actions, [self.n_agents, 1]))
