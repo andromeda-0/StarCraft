@@ -100,7 +100,16 @@ class RolloutWorker:
         avail_u_next = avail_u[1:]
         avail_u = avail_u[:-1]
 
-        M1 = self.env.get_current_score()
+        metrics = {'M1': self.env.metrics_manager.get_M1()}
+        from gym_multigrid.metrics import EventType
+        metrics['num_regular_evacuated'] = self.env.metrics_manager.get_num_victim(
+                EventType.EVACUATED, 'regular')
+        metrics['num_critical_evacuated'] = self.env.metrics_manager.get_num_victim(
+                EventType.EVACUATED, 'critical')
+        metrics['num_regular_stabilized'] = self.env.metrics_manager.get_num_victim(
+                EventType.STABILIZED, 'regular')
+        metrics['num_critical_stabilized'] = self.env.metrics_manager.get_num_victim(
+                EventType.STABILIZED, 'critical')
 
         # if step < self.episode_limit，padding
         for i in range(step, self.episode_limit):
@@ -138,7 +147,7 @@ class RolloutWorker:
         if evaluate and episode_num == self.args.evaluate_epoch - 1 and self.args.replay_dir != '':
             self.env.save_replay()
             self.env.close()
-        return episode, episode_reward, M1, step
+        return episode, episode_reward, metrics, step
 
 
 # RolloutWorker for communication

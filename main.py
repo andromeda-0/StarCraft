@@ -31,6 +31,6 @@ if __name__ == '__main__':
     if not args.evaluate:
         runner.run(1)
     else:
-        M1, _ = runner.evaluate()
-        print('The M1 of {} is  {}'.format(args.alg, M1))
+        metrics, _ = runner.evaluate()
+        print('The M1 of {} is  {}'.format(args.alg, metrics['M1']))
     env.close()

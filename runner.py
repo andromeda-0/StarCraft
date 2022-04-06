@@ -24,7 +24,7 @@ class Runner:
                 'reinforce') == -1:  # these 3 algorithms are on-policy
             self.buffer = ReplayBuffer(args)
         self.args = args
-        self.M1 = []
+        self.metrics = []
         self.episode_rewards = []
 
         # 用来保存plt和pkl
@@ -41,10 +41,10 @@ class Runner:
             while time_steps < self.args.n_steps:
                 # print('Run {}, time_steps {}'.format(num_run, time_steps))
                 if time_steps // self.args.evaluate_cycle > evaluate_steps:
-                    M1, episode_reward = self.evaluate()
-                    self.M1.append(M1)
+                    metrics, episode_reward = self.evaluate()
+                    self.metrics.append(metrics)
                     self.episode_rewards.append(episode_reward)
-                    self.plt(time_steps, M1, episode_reward)
+                    self.plt(time_steps, metrics, episode_reward)
                     evaluate_steps += 1
                 episodes = []
                 # 收集self.args.n_episodes个episodes
@@ -72,23 +72,30 @@ class Runner:
                                 min(self.buffer.current_size, self.args.batch_size))
                         self.agents.train(mini_batch, train_steps)
                         train_steps += 1
-        M1, episode_reward = self.evaluate()
-        print('M1 is ', M1)
-        self.M1.append(M1)
+        metrics, episode_reward = self.evaluate()
+        self.metrics.append(metrics)
         self.episode_rewards.append(episode_reward)
-        self.plt(time_steps, M1, episode_reward)
+        self.plt(time_steps, metrics, episode_reward)
 
     def evaluate(self):
-        M1_sum = 0
+        metrics = dict()
         episode_rewards = 0
         for epoch in range(self.args.evaluate_epoch):
-            _, episode_reward, M1, _ = self.rolloutWorker.generate_episode(epoch,
-                                                                           evaluate=True)
+            _, episode_reward, metrics_epoch, _ = self.rolloutWorker.generate_episode(epoch,
+                                                                                      evaluate=True)
             episode_rewards += episode_reward
-            M1_sum += M1
-        return M1_sum / self.args.evaluate_epoch, episode_rewards / self.args.evaluate_epoch
+            for k in metrics_epoch:
+                if k in metrics:
+                    metrics[k] += metrics_epoch[k]
+                else:
+                    metrics[k] = metrics_epoch[k]
 
-    def plt(self, num_steps, M1, episode_reward):
-        self.writer.add_scalar('M1', M1, num_steps)
+        for k in metrics:
+            metrics[k] = metrics[k] / self.args.evaluate_epoch
+        return metrics, episode_rewards / self.args.evaluate_epoch
+
+    def plt(self, num_steps, metrics, episode_reward):
+        for k in metrics:
+            self.writer.add_scalar(k, metrics[k], num_steps)
         self.writer.add_scalar('Episode_reward', episode_reward, num_steps)
         self.writer.flush()
