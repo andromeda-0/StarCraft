@@ -1,3 +1,4 @@
+#!/bin/bash
 tmux new -d -s coma
 tmux send-keys -t coma "conda activate lab-torch; python main.py --alg=coma --device 7 --map YellowEnv5"
 tmux new -d -s iql
