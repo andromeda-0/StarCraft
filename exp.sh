@@ -11,5 +11,4 @@ tmux new -d -s qmix
 tmux send-keys -t qmix "conda activate lab-torch; python main.py --alg=qmix --device 5 --map YellowEnv5"
 tmux new -d -s maven
 tmux send-keys -t maven "conda activate lab-torch; python main.py --alg=maven --device 5 --map YellowEnv5"
-conda activate lab-torch
 tensorboard --logdir=runs --port=6007
