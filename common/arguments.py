@@ -13,8 +13,7 @@ def get_common_args():
     # the environment setting
     parser.add_argument('--map', type=str, default='YellowEnv3', help='the map of the game')
     parser.add_argument('--step_mul', type=int, default=8, help='how many steps to make an action')
-    parser.add_argument('--replay_dir', type=str, default='',
-                        help='absolute path to save the replay')
+    parser.add_argument('--replay_dir', type=str, default='replays')
     parser.add_argument('--alg', type=str, default='reinforce+g2anet',
                         help='vdn, coma, central_v, qmix, qtran_base, qtran_alt,'
                              ' reinforce, coma+commnet, central_v+commnet,'
