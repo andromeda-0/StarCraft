@@ -29,7 +29,7 @@ if __name__ == '__main__':
     args.episode_limit = env_info["episode_limit"]
     runner = Runner(env, args)
     if not args.evaluate:
-        runner.run(1)
+        runner.run(args.run_id)
     else:
         metrics, _ = runner.evaluate()
         print('The M1 of {} is  {}'.format(args.alg, metrics['M1']))

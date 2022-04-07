@@ -42,6 +42,7 @@ def get_common_args():
     parser.add_argument('--evaluate', type=bool, default=False,
                         help='whether to evaluate the model')
     parser.add_argument('--device', type=int, help='GPU ID', default='0')
+    parser.add_argument('--run_id', type=int, default='0')
     args = parser.parse_args()
     # noinspection PyTypeChecker
     args.device = torch.device('cuda:' + str(args.device)) if args.device >= 0 else torch.device(
