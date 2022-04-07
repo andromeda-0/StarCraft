@@ -22,7 +22,7 @@ class RolloutWorker:
         self.min_epsilon = args.min_epsilon
         print('Init RolloutWorker')
 
-    def generate_episode(self, episode_num=None, evaluate=False):
+    def generate_episode(self, episode_num=None, evaluate=False, time_steps=-1):
         if self.args.replay_dir != '' and evaluate and episode_num == 0:  # prepare for save replay of evaluation
             self.env.close()
         o, u, r, s, avail_u, u_onehot, terminate, padded = [], [], [], [], [], [], [], []
@@ -150,7 +150,8 @@ class RolloutWorker:
             replay_dir = self.args.replay_dir + '/' + self.args.map + '/' + self.args.alg
             if not os.path.exists(replay_dir):
                 os.makedirs(replay_dir)
-            np.savez_compressed(os.path.join(replay_dir, '%d.npz' % episode_num), self.env.replay)
+            np.savez_compressed(os.path.join(replay_dir, '%d.npz' % time_steps),
+                                **(self.env.replay))
             self.env.close()
         return episode, episode_reward, metrics, step
 
@@ -172,7 +173,7 @@ class CommRolloutWorker:
         self.min_epsilon = args.min_epsilon
         print('Init CommRolloutWorker')
 
-    def generate_episode(self, episode_num=None, evaluate=False):
+    def generate_episode(self, episode_num=None, evaluate=False, time_steps=-1):
         if self.args.replay_dir != '' and evaluate and episode_num == 0:  # prepare for save replay
             self.env.close()
         o, u, r, s, avail_u, u_onehot, terminate, padded = [], [], [], [], [], [], [], []
@@ -277,7 +278,7 @@ class CommRolloutWorker:
             replay_dir = self.args.replay_dir + '/' + self.args.map + '/' + self.args.alg
             if not os.path.exists(replay_dir):
                 os.makedirs(replay_dir)
-            np.savez_compressed(os.path.join(replay_dir, '%d.npz' % episode_num), self.env.replay)
-            self.env.close()
+            np.savez_compressed(os.path.join(replay_dir, '%d.npz' % time_steps),
+                                **(self.env.replay))
             self.env.close()
         return episode, episode_reward, self.env.get_current_score(), step

@@ -41,7 +41,7 @@ class Runner:
             while time_steps < self.args.n_steps:
                 # print('Run {}, time_steps {}'.format(num_run, time_steps))
                 if time_steps // self.args.evaluate_cycle > evaluate_steps:
-                    metrics, episode_reward = self.evaluate()
+                    metrics, episode_reward = self.evaluate(time_steps)
                     self.metrics.append(metrics)
                     self.episode_rewards.append(episode_reward)
                     self.plt(time_steps, metrics, episode_reward)
@@ -72,17 +72,18 @@ class Runner:
                                 min(self.buffer.current_size, self.args.batch_size))
                         self.agents.train(mini_batch, train_steps)
                         train_steps += 1
-        metrics, episode_reward = self.evaluate()
+        metrics, episode_reward = self.evaluate(time_steps)
         self.metrics.append(metrics)
         self.episode_rewards.append(episode_reward)
         self.plt(time_steps, metrics, episode_reward)
 
-    def evaluate(self):
+    def evaluate(self, time_steps):
         metrics = dict()
         episode_rewards = 0
         for epoch in range(self.args.evaluate_epoch):
             _, episode_reward, metrics_epoch, _ = self.rolloutWorker.generate_episode(epoch,
-                                                                                      evaluate=True)
+                                                                                      evaluate=True,
+                                                                                      time_steps=time_steps)
             episode_rewards += episode_reward
             for k in metrics_epoch:
                 if k in metrics:
