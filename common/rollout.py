@@ -1,3 +1,5 @@
+import os.path
+
 import numpy as np
 import torch
 from gym_multigrid.envs.star_craft import StarCraftAPI
@@ -145,7 +147,10 @@ class RolloutWorker:
         if self.args.alg == 'maven':
             episode['z'] = np.array([maven_z.copy()])
         if evaluate and episode_num == self.args.evaluate_epoch - 1 and self.args.replay_dir != '':
-            self.env.save_replay()
+            replay_dir = self.args.replay_dir + '/' + self.args.map + '/' + self.args.alg
+            if not os.path.exists(replay_dir):
+                os.makedirs(replay_dir)
+            np.savez_compressed(os.path.join(replay_dir, '%d.npz' % episode_num), self.env.replay)
             self.env.close()
         return episode, episode_reward, metrics, step
 
@@ -269,6 +274,10 @@ class CommRolloutWorker:
             self.epsilon = epsilon
             # print('Epsilon is ', self.epsilon)
         if evaluate and episode_num == self.args.evaluate_epoch - 1 and self.args.replay_dir != '':
-            self.env.save_replay()
+            replay_dir = self.args.replay_dir + '/' + self.args.map + '/' + self.args.alg
+            if not os.path.exists(replay_dir):
+                os.makedirs(replay_dir)
+            np.savez_compressed(os.path.join(replay_dir, '%d.npz' % episode_num), self.env.replay)
+            self.env.close()
             self.env.close()
         return episode, episode_reward, self.env.get_current_score(), step
