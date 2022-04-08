@@ -242,6 +242,17 @@ class CommRolloutWorker:
         avail_u_next = avail_u[1:]
         avail_u = avail_u[:-1]
 
+        metrics = {'M1': self.env.metrics_manager.get_M1()}
+        from gym_multigrid.metrics import EventType
+        metrics['num_regular_evacuated'] = self.env.metrics_manager.get_num_victim(
+                EventType.EVACUATED, 'regular')
+        metrics['num_critical_evacuated'] = self.env.metrics_manager.get_num_victim(
+                EventType.EVACUATED, 'critical')
+        metrics['num_regular_stabilized'] = self.env.metrics_manager.get_num_victim(
+                EventType.STABILIZED, 'regular')
+        metrics['num_critical_stabilized'] = self.env.metrics_manager.get_num_victim(
+                EventType.STABILIZED, 'critical')
+
         # if step < self.episode_limit，padding
         for i in range(step, self.episode_limit):
             o.append(np.zeros((self.n_agents, self.obs_shape)))
@@ -281,4 +292,4 @@ class CommRolloutWorker:
             np.savez_compressed(os.path.join(replay_dir, '%d.npz' % time_steps),
                                 **(self.env.replay))
             self.env.close()
-        return episode, episode_reward, self.env.get_current_score(), step
+        return episode, episode_reward, metrics, step
