@@ -11,3 +11,9 @@ tmux new -d -s qmix
 tmux send-keys -t qmix "conda activate lab-torch; python main.py --alg=qmix --device 7 --map YellowEnv3 --run_id 3" Enter
 tmux new -d -s maven
 tmux send-keys -t maven "conda activate lab-torch; python main.py --alg=maven --device 7 --map YellowEnv3 --run_id 3" Enter
+tmux new -d -s reinforce
+tmux send-keys -t reinforce "conda activate lab-torch; python main.py --alg=reinforce --device 7 --map YellowEnv3 --run_id 3" Enter
+tmux new -d -s reinforce-commnet
+tmux send-keys -t reinforce-commnet "conda activate lab-torch; python main.py --alg=reinforce+commnet --device 5 --map YellowEnv3 --run_id 3" Enter
+tmux new -d -s reinforce-g2anet
+tmux send-keys -t reinforce-g2anet "conda activate lab-torch; python main.py --alg=reinforce+g2anet --device 6 --map YellowEnv3 --run_id 3" Enter
