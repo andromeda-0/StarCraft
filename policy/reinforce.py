@@ -186,7 +186,7 @@ class Reinforce:
         bx: N, T, n_agents, C
         by: N, T, n_agents
         """
-        loss_func = torch.nn.CrossEntropyLoss(weight=weights)
+        loss_func = torch.nn.CrossEntropyLoss(weight=weights).to(self.args.device)
         N = bx.shape[0]
         self.init_hidden(N)
         loss = torch.zeros(1, device=self.args.device)
@@ -194,7 +194,6 @@ class Reinforce:
         # 每个agent的所有动作的概率 (episode_num, max_episode_len， n_agents，n_actions)
         self.eval_hidden = self.eval_hidden.to(self.args.device)
         # inputs维度为(N * n_agents,inputs_shape)，得到的outputs维度为(episode_num * n_agents, n_actions)
-        predicted_by = torch.zeros_like(by, dtype=torch.float32)
         for t in range(bx.shape[1]):
             inputs = bx[:, t].reshape(-1, bx.shape[-1])
             outputs, self.eval_hidden = self.eval_rnn(inputs, self.eval_hidden)
