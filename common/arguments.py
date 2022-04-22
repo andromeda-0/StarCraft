@@ -28,7 +28,7 @@ def get_common_args():
                         help='whether to use one network for all agents')
     parser.add_argument('--gamma', type=float, default=0.99, help='discount factor')
     parser.add_argument('--optimizer', type=str, default="RMS", help='optimizer')
-    parser.add_argument('--evaluate_cycle', type=int, default=5000,
+    parser.add_argument('--evaluate_cycle', type=int, default=50000,
                         help='how often to evaluate the model')
     parser.add_argument('--evaluate_epoch', type=int, default=32,
                         help='number of the epoch to evaluate the agent')
