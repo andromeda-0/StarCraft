@@ -3,6 +3,7 @@ import os
 from network.base_net import RNN
 from network.commnet import CommNet
 from network.g2anet import G2ANet
+import torch.nn.functional
 
 
 class Reinforce:
@@ -38,8 +39,8 @@ class Reinforce:
         self.model_dir = args.model_dir + '/' + args.alg + '/' + args.map
         # 如果存在模型则加载模型
         if self.args.load_model:
-            if os.path.exists(self.model_dir + '/rnn_params.pkl'):
-                path_rnn = self.model_dir + '/rnn_params.pkl'
+            if os.path.exists(self.model_dir + '/rnn_params.pt'):
+                path_rnn = self.model_dir + '/rnn_params.pt'
                 map_location = self.args.device
                 self.eval_rnn.load_state_dict(torch.load(path_rnn, map_location=map_location))
                 print('Successfully load the model: {}'.format(path_rnn))
@@ -63,7 +64,7 @@ class Reinforce:
                 batch[key] = torch.tensor(batch[key], dtype=torch.long)
             else:
                 batch[key] = torch.tensor(batch[key], dtype=torch.float32)
-        u, r, avail_u, terminated = batch['u'], batch['r'],  batch['avail_u'], batch['terminated']
+        u, r, avail_u, terminated = batch['u'], batch['r'], batch['avail_u'], batch['terminated']
         mask = (1 - batch["padded"].float())  # 用来把那些填充的经验的TD-error置0，从而不让它们影响到学习
 
         r = r.to(self.args.device)
@@ -101,7 +102,10 @@ class Reinforce:
         n_return = torch.zeros_like(r)
         n_return[:, -1] = r[:, -1] * mask[:, -1]
         for transition_idx in range(max_episode_len - 2, -1, -1):
-            n_return[:, transition_idx] = (r[:, transition_idx] + self.args.gamma * n_return[:, transition_idx + 1] * terminated[:, transition_idx]) * mask[:, transition_idx]
+            n_return[:, transition_idx] = (r[:, transition_idx]
+                                           + self.args.gamma *
+                                           n_return[:, transition_idx + 1] *
+                                           terminated[:, transition_idx]) * mask[:, transition_idx]
         return n_return.unsqueeze(-1).expand(-1, -1, self.n_agents)
 
     def _get_actor_inputs(self, batch, transition_idx):
@@ -146,8 +150,10 @@ class Reinforce:
         # 把该列表转化成(episode个数, max_episode_len， n_agents，n_actions)的数组
         action_prob = torch.stack(action_prob, dim=1).cpu()
 
-        action_num = avail_actions.sum(dim=-1, keepdim=True).float().repeat(1, 1, 1, avail_actions.shape[-1])   # 可以选择的动作的个数
-        action_prob = ((1 - epsilon) * action_prob + torch.ones_like(action_prob) * epsilon / action_num)
+        action_num = avail_actions.sum(dim=-1, keepdim=True) \
+            .float().repeat(1, 1, 1, avail_actions.shape[-1])  # 可以选择的动作的个数
+        action_prob = ((1 - epsilon) * action_prob + torch.ones_like(
+                action_prob) * epsilon / action_num)
         action_prob[avail_actions == 0] = 0.0  # 不能执行的动作概率为0
 
         # 因为上面把不能执行的动作概率置为0，所以概率和不为1了，这里要重新正则化一下。执行过程中Categorical会自己正则化。
@@ -167,4 +173,42 @@ class Reinforce:
         num = str(train_step // self.args.save_cycle)
         if not os.path.exists(self.model_dir):
             os.makedirs(self.model_dir)
-        torch.save(self.eval_rnn.state_dict(),  self.model_dir + '/' + num + '_rnn_params.pkl')
+        torch.save(self.eval_rnn.state_dict(), self.model_dir + '/' + num + '_rnn_params.pt')
+
+    def save_BC_model(self, epoch):
+        if not os.path.exists(self.model_dir):
+            os.makedirs(self.model_dir)
+        torch.save(self.eval_rnn.state_dict(),
+                   self.model_dir + '/' + str(epoch) + '_rnn_params_BC.pt')
+
+    def BC(self, bx, by) -> float:
+        """
+        bx: N, T, n_agents, C
+        by: N, T, n_agents
+        """
+        loss_func = torch.nn.CrossEntropyLoss()
+        N = bx.shape[0]
+        self.init_hidden(N)
+        loss = torch.zeros(1, device=self.args.device)
+
+        # 每个agent的所有动作的概率 (episode_num, max_episode_len， n_agents，n_actions)
+        self.eval_hidden = self.eval_hidden.to(self.args.device)
+        # inputs维度为(N * n_agents,inputs_shape)，得到的outputs维度为(episode_num * n_agents, n_actions)
+        predicted_by = torch.zeros_like(by, dtype=torch.float32)
+        for t in range(bx.shape[1]):
+            inputs = bx[:, t].reshape(-1, bx.shape[-1])
+            outputs, self.eval_hidden = self.eval_rnn(inputs, self.eval_hidden)
+            outputs = outputs.reshape(N, self.n_agents, -1)  # N, n_agent, n_actions
+            outputs = torch.transpose(outputs, 1, 2)  # N, n_actions, n_agent
+            loss += loss_func(outputs, by[:, t])  # N, n_agent
+
+        # loss函数，(episode_num, max_episode_len, n_agents)
+        self.rnn_optimizer.zero_grad()
+        loss.backward()
+        if self.args.alg == 'reinforce+g2anet':
+            raise NotImplementedError()
+            torch.nn.utils.clip_grad_norm_(self.rnn_parameters, self.args.grad_norm_clip)
+        self.rnn_optimizer.step()
+        # print('Actor loss is', loss)
+
+        return loss.item()

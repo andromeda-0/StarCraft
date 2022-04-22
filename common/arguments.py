@@ -38,10 +38,16 @@ def get_common_args():
                         help='result directory of the policy')
     parser.add_argument('--load_model', type=bool, default=False,
                         help='whether to load the pretrained model')
-    parser.add_argument('--evaluate', type=bool, default=False,
+    parser.add_argument('--evaluate', action='store_true',
                         help='whether to evaluate the model')
     parser.add_argument('--device', type=int, help='GPU ID', default='0')
     parser.add_argument('--run_id', type=int, default='0')
+    parser.add_argument('--save_cycle', type=int, default=1000)
+    parser.add_argument('--BC', action='store_true')
+    parser.add_argument('--BC_data_dir', default='BC_data/Yellow3')
+    parser.add_argument('--BC_epochs', default=200, type=int)
+    parser.add_argument('--BC_batch_size', default=32, type=int)
+    parser.add_argument('--BC_save_interval', default=20, type=int)
     args = parser.parse_args()
     # noinspection PyTypeChecker
     args.device = torch.device('cuda:' + str(args.device)) if args.device >= 0 else torch.device(
@@ -152,22 +158,18 @@ def get_centralv_args(args):
     return args
 
 
-# arguments of central_v
+# arguments of reinforce
 def get_reinforce_args(args):
     # network
     args.rnn_hidden_dim = 64
-    args.critic_dim = 128
     args.lr_actor = 1e-4
-    args.lr_critic = 1e-3
+    # reinforce has no critic!
 
     # epsilon-greedy
     args.epsilon = 0.5
     args.anneal_epsilon = 0.00064
     args.min_epsilon = 0.02
     args.epsilon_anneal_scale = 'episode'
-
-    # how often to save the model
-    args.save_cycle = 5000
 
     # prevent gradient explosion
     args.grad_norm_clip = 10

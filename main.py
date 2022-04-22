@@ -28,5 +28,8 @@ if __name__ == '__main__':
     args.obs_shape = env_info["obs_shape"]
     args.episode_limit = env_info["episode_limit"]
     runner = Runner(env, args)
-    runner.run(args.run_id)
+    if args.BC:
+        runner.BC()
+    else:
+        runner.run()
     env.close()

@@ -41,7 +41,8 @@ class Agents:
             raise Exception("No such algorithm")
         self.args = args
 
-    def choose_action(self, obs, last_action, agent_num, avail_actions, epsilon, maven_z=None, evaluate=False):
+    def choose_action(self, obs, last_action, agent_num, avail_actions, epsilon, maven_z=None,
+                      evaluate=False):
         inputs = obs.copy()
         avail_actions_ind = np.nonzero(avail_actions)[0]  # index of actions which can be choose
 
@@ -66,13 +67,17 @@ class Agents:
             maven_z = torch.tensor(maven_z, dtype=torch.float32).unsqueeze(0)
 
             maven_z = maven_z.to(self.args.device)
-            q_value, self.policy.eval_hidden[:, agent_num, :] = self.policy.eval_rnn(inputs, hidden_state, maven_z)
+            q_value, self.policy.eval_hidden[:, agent_num, :] = self.policy.eval_rnn(inputs,
+                                                                                     hidden_state,
+                                                                                     maven_z)
         else:
-            q_value, self.policy.eval_hidden[:, agent_num, :] = self.policy.eval_rnn(inputs, hidden_state)
+            q_value, self.policy.eval_hidden[:, agent_num, :] = self.policy.eval_rnn(inputs,
+                                                                                     hidden_state)
 
         # choose action from q value
         if self.args.alg == 'coma' or self.args.alg == 'central_v' or self.args.alg == 'reinforce':
-            action = self._choose_action_from_softmax(q_value.cpu(), avail_actions, epsilon, evaluate)
+            action = self._choose_action_from_softmax(q_value.cpu(), avail_actions, epsilon,
+                                                      evaluate)
         else:
             q_value[avail_actions == 0] = - float("inf")
             if np.random.uniform() < epsilon:
@@ -85,7 +90,8 @@ class Agents:
         """
         :param inputs: # q_value of all actions
         """
-        action_num = avail_actions.sum(dim=1, keepdim=True).float().repeat(1, avail_actions.shape[-1])  # num of avail_actions
+        action_num = avail_actions.sum(dim=1, keepdim=True).float().repeat(1, avail_actions.shape[
+            -1])  # num of avail_actions
         # 先将Actor网络的输出通过softmax转换成概率分布
         prob = torch.nn.functional.softmax(inputs, dim=-1)
         # add noise of epsilon
@@ -128,6 +134,12 @@ class Agents:
         if train_step > 0 and train_step % self.args.save_cycle == 0:
             self.policy.save_model(train_step)
 
+    def BC(self, bx, by, epoch) -> float:
+        loss = self.policy.BC(bx, by)
+        if epoch % self.args.BC_save_interval == 0:
+            self.policy.save_BC_model(epoch)
+        return loss
+
 
 # Agent for communication
 class CommAgents:
@@ -155,7 +167,8 @@ class CommAgents:
     def choose_action(self, weights, avail_actions, epsilon, evaluate=False):
         weights = weights.unsqueeze(0)
         avail_actions = torch.tensor(avail_actions, dtype=torch.float32).unsqueeze(0)
-        action_num = avail_actions.sum(dim=1, keepdim=True).float().repeat(1, avail_actions.shape[-1])  # 可以选择的动作的个数
+        action_num = avail_actions.sum(dim=1, keepdim=True).float().repeat(1, avail_actions.shape[
+            -1])  # 可以选择的动作的个数
         # 先将Actor网络的输出通过softmax转换成概率分布
         prob = torch.nn.functional.softmax(weights, dim=-1)
         # 在训练的时候给概率分布添加噪音
@@ -214,13 +227,3 @@ class CommAgents:
         self.policy.learn(batch, max_episode_len, train_step, epsilon)
         if train_step > 0 and train_step % self.args.save_cycle == 0:
             self.policy.save_model(train_step)
-
-
-
-
-
-
-
-
-
-

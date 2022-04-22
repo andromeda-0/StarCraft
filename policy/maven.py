@@ -41,11 +41,11 @@ class MAVEN:
         self.model_dir = args.model_dir + '/' + args.alg + '/' + args.map
         # 如果存在模型则加载模型
         if self.args.load_model:
-            if os.path.exists(self.model_dir + '/rnn_net_params.pkl'):
-                path_z_policy = self.model_dir + '/z_policy_params.pkl'
-                path_rnn = self.model_dir + '/rnn_net_params.pkl'
-                path_qmix = self.model_dir + '/qmix_net_params.pkl'
-                path_mi = self.model_dir + '/mi_net_params.pkl'
+            if os.path.exists(self.model_dir + '/rnn_net_params.pt'):
+                path_z_policy = self.model_dir + '/z_policy_params.pt'
+                path_rnn = self.model_dir + '/rnn_net_params.pt'
+                path_qmix = self.model_dir + '/qmix_net_params.pt'
+                path_mi = self.model_dir + '/mi_net_params.pt'
                 map_location = self.args.device
                 self.z_policy.load_state_dict(torch.load(path_z_policy, map_location=map_location))
                 self.eval_rnn.load_state_dict(torch.load(path_rnn, map_location=map_location))
@@ -231,7 +231,7 @@ class MAVEN:
         num = str(train_step // self.args.save_cycle)
         if not os.path.exists(self.model_dir):
             os.makedirs(self.model_dir)
-        torch.save(self.z_policy.state_dict(), self.model_dir + '/' + num + '_z_policy_params.pkl')
-        torch.save(self.mi_net.state_dict(),  self.model_dir + '/' + num + '_mi_net_params.pkl')
-        torch.save(self.eval_qmix_net.state_dict(), self.model_dir + '/' + num + '_qmix_net_params.pkl')
-        torch.save(self.eval_rnn.state_dict(),  self.model_dir + '/' + num + '_rnn_net_params.pkl')
+        torch.save(self.z_policy.state_dict(), self.model_dir + '/' + num + '_z_policy_params.pt')
+        torch.save(self.mi_net.state_dict(),  self.model_dir + '/' + num + '_mi_net_params.pt')
+        torch.save(self.eval_qmix_net.state_dict(), self.model_dir + '/' + num + '_qmix_net_params.pt')
+        torch.save(self.eval_rnn.state_dict(),  self.model_dir + '/' + num + '_rnn_net_params.pt')

@@ -47,9 +47,9 @@ class COMA:
         self.model_dir = args.model_dir + '/' + args.alg + '/' + args.map
         # 如果存在模型则加载模型
         if self.args.load_model:
-            if os.path.exists(self.model_dir + '/rnn_params.pkl'):
-                path_rnn = self.model_dir + '/rnn_params.pkl'
-                path_coma = self.model_dir + '/critic_params.pkl'
+            if os.path.exists(self.model_dir + '/rnn_params.pt'):
+                path_rnn = self.model_dir + '/rnn_params.pt'
+                path_coma = self.model_dir + '/critic_params.pt'
                 map_location = self.args.device
                 self.eval_rnn.load_state_dict(torch.load(path_rnn, map_location=map_location))
                 self.eval_critic.load_state_dict(torch.load(path_coma, map_location=map_location))
@@ -311,5 +311,5 @@ class COMA:
         num = str(train_step // self.args.save_cycle)
         if not os.path.exists(self.model_dir):
             os.makedirs(self.model_dir)
-        torch.save(self.eval_critic.state_dict(), self.model_dir + '/' + num + '_critic_params.pkl')
-        torch.save(self.eval_rnn.state_dict(), self.model_dir + '/' + num + '_rnn_params.pkl')
+        torch.save(self.eval_critic.state_dict(), self.model_dir + '/' + num + '_critic_params.pt')
+        torch.save(self.eval_rnn.state_dict(), self.model_dir + '/' + num + '_rnn_params.pt')

@@ -1,12 +1,15 @@
 import numpy as np
 import os
 
+from torch import nn
 from tqdm import tqdm
 
 from common.rollout import RolloutWorker, CommRolloutWorker
 from agent.agent import Agents, CommAgents
 from common.replay_buffer import ReplayBuffer
 from torch.utils.tensorboard import SummaryWriter
+import common.utils
+import torch.utils.data
 
 
 class Runner:
@@ -32,10 +35,9 @@ class Runner:
         if not os.path.exists(self.save_path):
             os.makedirs(self.save_path)
 
-        self.writer = None
+        self.writer = SummaryWriter(self.save_path + '/' + str(self.args.run_id))
 
-    def run(self, num_run):
-        self.writer = SummaryWriter(self.save_path + '/' + str(num_run))
+    def run(self):
         time_steps, train_steps, evaluate_steps = 0, 0, -1
         with tqdm(total=self.args.n_steps) as pbar:
             while time_steps < self.args.n_steps:
@@ -76,6 +78,22 @@ class Runner:
         self.metrics.append(metrics)
         self.episode_rewards.append(episode_reward)
         self.plt(time_steps, metrics, episode_reward)
+
+    def BC(self):
+        print('Behavior Cloning...')
+        dataset = common.utils.SaturnSeries(self.args)
+        dataloader = torch.utils.data.DataLoader(dataset, batch_size=self.args.BC_batch_size,
+                                                 shuffle=True)
+
+        for epoch in tqdm(range(self.args.BC_epochs)):
+            total_loss = 0.0
+            i = 0
+            for i, batch in enumerate(dataloader):
+                bx = batch[0].to(self.args.device)
+                by = batch[1].to(self.args.device)
+
+                total_loss += self.agents.BC(bx, by, epoch)
+            self.writer.add_scalar('BC_RMSE', np.sqrt(total_loss / (i + 1)), epoch)
 
     def evaluate(self, time_steps):
         metrics = dict()
