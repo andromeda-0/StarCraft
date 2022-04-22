@@ -84,6 +84,14 @@ class Runner:
         dataset = common.utils.SaturnSeries(self.args)
         dataloader = torch.utils.data.DataLoader(dataset, batch_size=self.args.BC_batch_size,
                                                  shuffle=True)
+        count_actions = torch.zeros(self.args.n_actions)
+        bin_actions = torch.bincount(dataset.actions.flatten())
+        count_actions[:bin_actions.shape[0]] = bin_actions
+        mask_unavailable_actions = count_actions == 0
+        count_actions[mask_unavailable_actions] = 1
+        weights = 1 / count_actions
+        weights[mask_unavailable_actions] = 0
+        weights = weights / torch.norm(weights)
 
         for epoch in tqdm(range(1, self.args.BC_epochs + 1)):
             total_loss = 0.0
@@ -92,7 +100,7 @@ class Runner:
                 bx = batch[0].to(self.args.device)
                 by = batch[1].to(self.args.device)
 
-                total_loss += self.agents.BC(bx, by, epoch)
+                total_loss += self.agents.BC(bx, by, epoch, weights)
             self.writer.add_scalar('BC_RMSE', np.sqrt(total_loss / (i + 1)), epoch)
 
     def evaluate(self, time_steps):

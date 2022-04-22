@@ -134,8 +134,8 @@ class Agents:
         if train_step > 0 and train_step % self.args.save_cycle == 0:
             self.policy.save_model(train_step)
 
-    def BC(self, bx, by, epoch) -> float:
-        loss = self.policy.BC(bx, by)
+    def BC(self, bx, by, epoch, weights) -> float:
+        loss = self.policy.BC(bx, by, weights)
         if epoch % self.args.BC_save_interval == 0:
             self.policy.save_BC_model(epoch)
         return loss

@@ -42,7 +42,7 @@ class Reinforce:
             if os.path.exists(self.args.load_model):
                 map_location = self.args.device
                 self.eval_rnn.load_state_dict(
-                    torch.load(self.args.load_model, map_location=map_location))
+                        torch.load(self.args.load_model, map_location=map_location))
                 print('Successfully load the model: {}'.format(self.args.load_model))
             else:
                 raise Exception("No model at" + self.args.load_model)
@@ -181,12 +181,12 @@ class Reinforce:
         torch.save(self.eval_rnn.state_dict(),
                    self.model_dir + '/' + str(epoch) + '_rnn_params_BC.pt')
 
-    def BC(self, bx, by) -> float:
+    def BC(self, bx, by, weights) -> float:
         """
         bx: N, T, n_agents, C
         by: N, T, n_agents
         """
-        loss_func = torch.nn.CrossEntropyLoss()
+        loss_func = torch.nn.CrossEntropyLoss(weight=weights)
         N = bx.shape[0]
         self.init_hidden(N)
         loss = torch.zeros(1, device=self.args.device)
