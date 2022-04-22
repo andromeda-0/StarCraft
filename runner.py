@@ -92,6 +92,7 @@ class Runner:
         weights = 1 / count_actions
         weights[mask_unavailable_actions] = 0
         weights = weights / torch.norm(weights)
+        weights.to(self.args.device)
 
         for epoch in tqdm(range(1, self.args.BC_epochs + 1)):
             total_loss = 0.0
