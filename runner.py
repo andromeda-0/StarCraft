@@ -85,7 +85,7 @@ class Runner:
         dataloader = torch.utils.data.DataLoader(dataset, batch_size=self.args.BC_batch_size,
                                                  shuffle=True)
 
-        for epoch in tqdm(range(self.args.BC_epochs)):
+        for epoch in tqdm(range(1, self.args.BC_epochs + 1)):
             total_loss = 0.0
             i = 0
             for i, batch in enumerate(dataloader):

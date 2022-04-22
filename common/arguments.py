@@ -36,7 +36,7 @@ def get_common_args():
                         help='model directory of the policy')
     parser.add_argument('--result_dir', type=str, default='./runs',
                         help='result directory of the policy')
-    parser.add_argument('--load_model', type=bool, default=False,
+    parser.add_argument('--load_model', type=str, default='',
                         help='whether to load the pretrained model')
     parser.add_argument('--evaluate', action='store_true',
                         help='whether to evaluate the model')

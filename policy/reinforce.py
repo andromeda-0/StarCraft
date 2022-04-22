@@ -38,14 +38,14 @@ class Reinforce:
 
         self.model_dir = args.model_dir + '/' + args.alg + '/' + args.map
         # 如果存在模型则加载模型
-        if self.args.load_model:
-            if os.path.exists(self.model_dir + '/rnn_params.pt'):
-                path_rnn = self.model_dir + '/rnn_params.pt'
+        if self.args.load_model != '':
+            if os.path.exists(self.args.load_model):
                 map_location = self.args.device
-                self.eval_rnn.load_state_dict(torch.load(path_rnn, map_location=map_location))
-                print('Successfully load the model: {}'.format(path_rnn))
+                self.eval_rnn.load_state_dict(
+                    torch.load(self.args.load_model, map_location=map_location))
+                print('Successfully load the model: {}'.format(self.args.load_model))
             else:
-                raise Exception("No model!")
+                raise Exception("No model at" + self.args.load_model)
 
         self.rnn_parameters = list(self.eval_rnn.parameters())
         if args.optimizer == "RMS":
