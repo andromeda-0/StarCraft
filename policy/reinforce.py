@@ -112,8 +112,7 @@ class Reinforce:
         # 取出所有episode上该transition_idx的经验，u_onehot要取出所有，因为要用到上一条
         obs, u_onehot = batch['o'][:, transition_idx], batch['u_onehot'][:]
         episode_num = obs.shape[0]
-        inputs = []
-        inputs.append(obs)
+        inputs = [obs]
         # 给inputs添加上一个动作、agent编号
 
         if self.args.last_action:
@@ -176,10 +175,11 @@ class Reinforce:
         torch.save(self.eval_rnn.state_dict(), self.model_dir + '/' + num + '_rnn_params.pt')
 
     def save_BC_model(self, epoch):
-        if not os.path.exists(self.model_dir):
-            os.makedirs(self.model_dir)
+        dir_to_save = os.path.join(self.model_dir, str(self.args.run_id))
+        if not os.path.exists(dir_to_save):
+            os.makedirs(dir_to_save)
         torch.save(self.eval_rnn.state_dict(),
-                   self.model_dir + '/' + str(epoch) + '_rnn_params_BC.pt')
+                   os.path.join(dir_to_save, str(epoch) + '_rnn_params_BC.pt'))
 
     def BC(self, bx, by, weights) -> float:
         """
