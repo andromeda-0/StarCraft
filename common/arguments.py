@@ -41,7 +41,7 @@ def get_common_args():
     parser.add_argument('--evaluate', action='store_true',
                         help='whether to evaluate the model')
     parser.add_argument('--device', type=int, help='GPU ID', default='0')
-    parser.add_argument('--run_id', type=int, default='0')
+    parser.add_argument('--run_id', default='0')
     parser.add_argument('--save_cycle', type=int, default=1000)
     parser.add_argument('--BC', action='store_true')
     parser.add_argument('--BC_data_dir', default='BC_data/Yellow3')
