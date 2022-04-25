@@ -1,4 +1,4 @@
-from gym_multigrid.envs.star_craft import *
+from gym_multigrid.envs.feature_api import *
 
 from common.arguments import get_centralv_args, get_coma_args, get_commnet_args, get_common_args, \
     get_g2anet_args, get_mixer_args, get_reinforce_args
