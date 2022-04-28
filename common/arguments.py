@@ -48,6 +48,7 @@ def get_common_args():
     parser.add_argument('--BC_epochs', default=200, type=int)
     parser.add_argument('--BC_batch_size', default=32, type=int)
     parser.add_argument('--BC_save_interval', default=20, type=int)
+    parser.add_argument('--lr_actor', default=1e-4, type=float)
     args = parser.parse_args()
     # noinspection PyTypeChecker
     args.device = torch.device('cuda:' + str(args.device)) if args.device >= 0 else torch.device(
@@ -60,7 +61,6 @@ def get_coma_args(args):
     # network
     args.rnn_hidden_dim = 64
     args.critic_dim = 128
-    args.lr_actor = 1e-4
     args.lr_critic = 1e-3
 
     # epsilon-greedy
@@ -134,7 +134,6 @@ def get_centralv_args(args):
     # network
     args.rnn_hidden_dim = 64
     args.critic_dim = 128
-    args.lr_actor = 1e-4
     args.lr_critic = 1e-3
 
     # epsilon-greedy
@@ -162,7 +161,6 @@ def get_centralv_args(args):
 def get_reinforce_args(args):
     # network
     args.rnn_hidden_dim = 64
-    args.lr_actor = 1e-4
     # reinforce has no critic!
 
     # epsilon-greedy
