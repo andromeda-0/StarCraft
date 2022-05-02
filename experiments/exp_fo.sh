@@ -11,10 +11,10 @@ tmux new -d -s FON_A1D3_Random
 tmux send-keys -t FON_A1D3_Random "cd ..; conda activate lab-torch; python main.py --alg=reinforce --device 6 --map fully_observable.FON_A1D3_Random --run_id non_bc_3 --n_steps 10000000" Enter
 tmux new -d -s FON_A1D3_Transport_Random
 tmux send-keys -t FON_A1D3_Transport_Random "cd ..; conda activate lab-torch; python main.py --alg=reinforce --device 6 --map fully_observable.FON_A1D3_Transport_Random --run_id non_bc_3 --n_steps 10000000" Enter
-tmux new -d -s FON_A1D3_Transport
-tmux send-keys -t FON_A1D3_Transport "cd ..; conda activate lab-torch; python main.py --alg=reinforce --device 6 --map fully_observable.FON_A1D3_Transport --run_id non_bc_3 --n_steps 10000000" Enter
+tmux new -d -s FON_A3_Random
+tmux send-keys -t FON_A3_Random "cd ..; conda activate lab-torch; python main.py --alg=reinforce --device 6 --map fully_observable.FON_A3_Random --run_id non_bc_3 --n_steps 10000000" Enter
 tmux new -d -s FON_A3_Transport_Random
-tmux send-keys -t FON_A3_Transport_Random "cd ..; conda activate lab-torch; python main.py --alg=reinforce --device 7 --map fully_observable.FON_A3_Transport_Random --run_id non_bc_3 --n_steps 10000000" Enter
+tmux send-keys -t FON_A3_Transport_Random "cd ..; conda activate lab-torch; python main.py --alg=reinforce --device 7 --map fully_observable.FON_A3_Random --run_id non_bc_3 --n_steps 10000000" Enter
 tmux new -d -s FON_A4_Random
 tmux send-keys -t FON_A4_Random "cd ..; conda activate lab-torch; python main.py --alg=reinforce --device 7 --map fully_observable.FON_A4_Random --run_id non_bc_3 --n_steps 10000000" Enter
 tmux new -d -s FON_A4
