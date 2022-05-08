@@ -308,7 +308,7 @@ class COMA:
         return q_values
 
     def save_model(self, train_step):
-        num = str(train_step // self.args.save_cycle)
+        num = str(train_step)
         if not os.path.exists(self.model_dir):
             os.makedirs(self.model_dir)
         torch.save(self.eval_critic.state_dict(), self.model_dir + '/' + num + '_critic_params.pt')

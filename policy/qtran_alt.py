@@ -289,7 +289,7 @@ class QtranAlt:
         self.target_hidden = torch.zeros((episode_num, self.n_agents, self.args.rnn_hidden_dim))
 
     def save_model(self, train_step):
-        num = str(train_step // self.args.save_cycle)
+        num = str(train_step)
         if not os.path.exists(self.model_dir):
             os.makedirs(self.model_dir)
 

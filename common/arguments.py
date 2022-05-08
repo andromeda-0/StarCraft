@@ -42,7 +42,7 @@ def get_common_args():
                         help='whether to evaluate the model')
     parser.add_argument('--device', type=int, help='GPU ID', default='0')
     parser.add_argument('--run_id', default='0')
-    parser.add_argument('--save_cycle', type=int, default=1000)
+    parser.add_argument('--save_cycle', type=int, default=10, help='save')
     parser.add_argument('--BC', action='store_true')
     parser.add_argument('--BC_data_dir', default='BC_data/Yellow3')
     parser.add_argument('--BC_epochs', default=200, type=int)
@@ -73,7 +73,6 @@ def get_coma_args(args):
     args.td_lambda = 0.8
 
     # how often to save the model
-    args.save_cycle = 5000
 
     # how often to update the target_net
     args.target_update_cycle = 200
@@ -109,7 +108,6 @@ def get_mixer_args(args):
     args.buffer_size = 500  # int(5e3) TODO
 
     # how often to save the model
-    args.save_cycle = 5000
 
     # how often to update the target_net
     args.target_update_cycle = 200
@@ -146,7 +144,6 @@ def get_centralv_args(args):
     args.td_lambda = 0.8
 
     # how often to save the model
-    args.save_cycle = 5000
 
     # how often to update the target_net
     args.target_update_cycle = 200
