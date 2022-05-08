@@ -19,7 +19,7 @@ def get_common_args():
                              ' reinforce, coma+commnet, central_v+commnet,'
                              ' reinforce+commnet, coma+g2anet, central_v+g2anet,'
                              ' reinforce+g2anet, maven')
-    parser.add_argument('--n_steps', type=int, default=2000000, help='total time steps')
+    parser.add_argument('--n_steps', type=int, default=int(1e7), help='total time steps')
     parser.add_argument('--n_episodes', type=int, default=1,
                         help='the number of episodes before once training')
     parser.add_argument('--last_action', type=bool, default=True,
@@ -30,7 +30,7 @@ def get_common_args():
     parser.add_argument('--optimizer', type=str, default="RMS", help='optimizer')
     parser.add_argument('--evaluate_cycle', type=int, default=50000,
                         help='how often to evaluate the model')
-    parser.add_argument('--evaluate_epoch', type=int, default=32,
+    parser.add_argument('--evaluate_epoch', type=int, default=16,
                         help='number of the epoch to evaluate the agent')
     parser.add_argument('--model_dir', type=str, default='./model',
                         help='model directory of the policy')
