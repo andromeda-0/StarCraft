@@ -58,11 +58,13 @@ class RolloutWorker:
                     # noinspection PyUnboundLocalVariable
                     action = self.agents.choose_action(obs[agent_id], last_action[agent_id],
                                                        agent_id,
-                                                       avail_action, epsilon, maven_z, evaluate)
+                                                       avail_action, epsilon, maven_z=maven_z,
+                                                       evaluate=evaluate)
                 else:
                     action = self.agents.choose_action(obs[agent_id], last_action[agent_id],
                                                        agent_id,
-                                                       avail_action, epsilon, evaluate)
+                                                       avail_action, epsilon, maven_z=None,
+                                                       evaluate=evaluate)
                 # generate onehot vector of th action
                 action_onehot = np.zeros(self.args.n_actions)
                 action_onehot[action] = 1
@@ -199,7 +201,8 @@ class CommRolloutWorker:
             for agent_id in range(self.n_agents):
                 avail_action = self.env.get_avail_agent_actions(agent_id)
                 action = self.agents.choose_action(weights[agent_id], avail_action, epsilon,
-                                                   evaluate)
+                                                   maven_z=None,
+                                                   evaluate=evaluate)
 
                 # generate onehot vector of th action
                 action_onehot = np.zeros(self.args.n_actions)

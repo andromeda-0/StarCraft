@@ -41,8 +41,8 @@ class Agents:
             raise Exception("No such algorithm")
         self.args = args
 
-    def choose_action(self, obs, last_action, agent_num, avail_actions, epsilon, maven_z=None,
-                      evaluate=False):
+    def choose_action(self, obs, last_action, agent_num, avail_actions, epsilon, maven_z,
+                      evaluate):
         inputs = obs.copy()
         avail_actions_ind = np.nonzero(avail_actions)[0]  # index of actions which can be choose
 
@@ -75,15 +75,15 @@ class Agents:
                                                                                      hidden_state)
 
         # choose action from q value
-        if self.args.alg == 'coma' or self.args.alg == 'central_v' or self.args.alg == 'reinforce':
-            action = self._choose_action_from_softmax(q_value.cpu(), avail_actions, epsilon,
+        # if self.args.alg == 'coma' or self.args.alg == 'central_v' or self.args.alg == 'reinforce':
+        action = self._choose_action_from_softmax(q_value.cpu(), avail_actions, epsilon,
                                                       evaluate)
-        else:
-            q_value[avail_actions == 0] = - float("inf")
-            if np.random.uniform() < epsilon:
-                action = np.random.choice(avail_actions_ind)  # action是一个整数
-            else:
-                action = torch.argmax(q_value)
+        # else:
+        #     q_value[avail_actions == 0] = - float("inf")
+        #     if np.random.uniform() < epsilon:
+        #         action = np.random.choice(avail_actions_ind)  # action是一个整数
+        #     else:
+        #         action = torch.argmax(q_value)
         return action
 
     def _choose_action_from_softmax(self, inputs, avail_actions, epsilon, evaluate=False):
@@ -103,10 +103,12 @@ class Agents:
         会将其进行正则化。要注意在训练的过程中没有用到Categorical，所以训练时取执行的动作对应的概率需要再正则化。
         """
 
-        if epsilon == 0 and evaluate:
-            action = torch.argmax(prob)
-        else:
-            action = Categorical(prob).sample().long()
+        # if epsilon == 0 and evaluate:
+        #     action = torch.argmax(prob)
+        # else:
+        #     action = Categorical(prob).sample().long()
+        # return action
+        action = Categorical(prob).sample().long()
         return action
 
     def _get_max_episode_len(self, batch):
