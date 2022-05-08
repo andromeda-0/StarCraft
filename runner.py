@@ -1,15 +1,14 @@
-import numpy as np
 import os
 
-from torch import nn
+import numpy as np
+import torch.utils.data
+from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
-from common.rollout import RolloutWorker, CommRolloutWorker
+import common.utils
 from agent.agent import Agents, CommAgents
 from common.replay_buffer import ReplayBuffer
-from torch.utils.tensorboard import SummaryWriter
-import common.utils
-import torch.utils.data
+from common.rollout import CommRolloutWorker, RolloutWorker
 
 
 class Runner:
@@ -27,8 +26,6 @@ class Runner:
                 'reinforce') == -1:  # these 3 algorithms are on-policy
             self.buffer = ReplayBuffer(args)
         self.args = args
-        self.metrics = []
-        self.episode_rewards = []
 
         # 用来保存plt和pkl
         self.save_path = self.args.result_dir + '/' + args.map + '/' + args.alg
@@ -44,8 +41,6 @@ class Runner:
                 # print('Run {}, time_steps {}'.format(num_run, time_steps))
                 if time_steps // self.args.evaluate_cycle > evaluate_steps:
                     metrics, episode_reward = self.evaluate(time_steps)
-                    self.metrics.append(metrics)
-                    self.episode_rewards.append(episode_reward)
                     self.plt(time_steps, metrics, episode_reward)
                     evaluate_steps += 1
                 episodes = []
@@ -75,8 +70,6 @@ class Runner:
                         self.agents.train(mini_batch, train_steps)
                         train_steps += 1
         metrics, episode_reward = self.evaluate(time_steps)
-        self.metrics.append(metrics)
-        self.episode_rewards.append(episode_reward)
         self.plt(time_steps, metrics, episode_reward)
 
     def BC(self):
@@ -106,24 +99,29 @@ class Runner:
 
     def evaluate(self, time_steps):
         metrics = dict()
-        episode_rewards = 0
+        episode_rewards = np.zeros(self.args.evaluate_epoch)
         for epoch in range(self.args.evaluate_epoch):
             _, episode_reward, metrics_epoch, _ = self.rolloutWorker.generate_episode(epoch,
                                                                                       evaluate=True,
                                                                                       time_steps=time_steps)
-            episode_rewards += episode_reward
+            episode_rewards[epoch] = episode_reward
             for k in metrics_epoch:
-                if k in metrics:
-                    metrics[k] += metrics_epoch[k]
-                else:
-                    metrics[k] = metrics_epoch[k]
+                if k not in metrics:
+                    metrics[k] = np.zeros(self.args.evaluate_epoch)
 
-        for k in metrics:
-            metrics[k] = metrics[k] / self.args.evaluate_epoch
-        return metrics, episode_rewards / self.args.evaluate_epoch
+                metrics[k][epoch] = metrics_epoch[k]
+
+        return metrics, episode_rewards
 
     def plt(self, num_steps, metrics, episode_reward):
         for k in metrics:
-            self.writer.add_scalar(k, metrics[k], num_steps)
-        self.writer.add_scalar('Episode_reward', episode_reward, num_steps)
+            self.writer.add_scalar(k + '/mean', metrics[k].mean(), num_steps)
+            self.writer.add_scalar(k + '/std', metrics[k].std(), num_steps)
+            self.writer.add_scalar(k + '/max', metrics[k].max(), num_steps)
+            self.writer.add_scalar(k + '/min', metrics[k].min(), num_steps)
+
+        self.writer.add_scalar('rewards/mean', episode_reward.mean(), num_steps)
+        self.writer.add_scalar('rewards/std', episode_reward.std(), num_steps)
+        self.writer.add_scalar('rewards/max', episode_reward.max(), num_steps)
+        self.writer.add_scalar('rewards/min', episode_reward.min(), num_steps)
         self.writer.flush()
