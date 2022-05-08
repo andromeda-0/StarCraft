@@ -13,11 +13,11 @@ class RNN(nn.Module):
         self.fc2 = nn.Linear(args.rnn_hidden_dim, args.n_actions)
 
     def forward(self, obs, hidden_state):
-        x = f.relu(self.fc1(obs))
+        x = f.relu(self.fc1(obs), inplace=True)
         h_in = hidden_state.reshape(-1, self.args.rnn_hidden_dim)
         h = self.rnn(x, h_in)
         q = self.fc2(h)
-        return q, h
+        return q, h.detach()
 
 
 # Critic of Central-V
