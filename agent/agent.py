@@ -181,12 +181,12 @@ class CommAgents:
         不能执行的动作概率为0之后，prob中的概率和不为1，这里不需要进行正则化，因为torch.distributions.Categorical
         会将其进行正则化。要注意在训练的过程中没有用到Categorical，所以训练时取执行的动作对应的概率需要再正则化。
         """
-
-        if epsilon == 0 and evaluate:
-            # 测试时直接选最大的
-            action = torch.argmax(prob)
-        else:
-            action = Categorical(prob).sample().long()
+        #
+        # if epsilon == 0 and evaluate:
+        #     # 测试时直接选最大的
+        #     action = torch.argmax(prob)
+        # else:
+        action = Categorical(prob).sample().long()
         return action
 
     def get_action_weights(self, obs, last_action):
