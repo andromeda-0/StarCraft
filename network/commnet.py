@@ -18,7 +18,7 @@ class CommNet(nn.Module):
     def forward(self, obs, hidden_state):
         # 先对obs编码
         obs_encoding = torch.sigmoid(
-            self.encoding(obs))  # .reshape(-1, self.args.n_agents, self.args.rnn_hidden_dim)
+                self.encoding(obs))  # .reshape(-1, self.args.n_agents, self.args.rnn_hidden_dim)
 
         h_in = hidden_state.reshape(-1, self.args.rnn_hidden_dim)
 
@@ -53,4 +53,4 @@ class CommNet(nn.Module):
         # 通信结束后计算每个agent的所有动作的权重，概率在agent.py中选择动作时计算
         weights = self.decoding(h)
 
-        return weights, h_out
+        return weights, h_out.detach()
