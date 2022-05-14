@@ -7,13 +7,17 @@ from typing import Union
 
 try:
     from gym_multigrid.envs.star_craft import StarCraftAPI
+    from gym_multigrid.metrics import EventType
 except ImportError:
     StarCraftAPI = None
+    EventType = None
 
 try:
     from graph_env.env.saturn import SaturnGraph
+    from graph_env.metrics import EventType
 except ImportError:
     SaturnGraph = None
+    EventType = None
 
 
 class RolloutWorker:
@@ -114,16 +118,15 @@ class RolloutWorker:
         avail_u_next = avail_u[1:]
         avail_u = avail_u[:-1]
 
-        metrics = {'M1': self.env.metrics_manager.get_M1()}
-        from gym_multigrid.metrics import EventType
-        metrics['num_regular_evacuated'] = self.env.metrics_manager.get_num_victim(
-                EventType.EVACUATED, 'regular')
-        metrics['num_critical_evacuated'] = self.env.metrics_manager.get_num_victim(
-                EventType.EVACUATED, 'critical')
-        metrics['num_regular_stabilized'] = self.env.metrics_manager.get_num_victim(
-                EventType.STABILIZED, 'regular')
-        metrics['num_critical_stabilized'] = self.env.metrics_manager.get_num_victim(
-                EventType.STABILIZED, 'critical')
+        metrics = {'M1': self.env.metrics_manager.get_M1(),
+                   'num_regular_evacuated': self.env.metrics_manager.get_num_victim(
+                           EventType.EVACUATED, 'regular'),
+                   'num_critical_evacuated': self.env.metrics_manager.get_num_victim(
+                           EventType.EVACUATED, 'critical'),
+                   'num_regular_stabilized': self.env.metrics_manager.get_num_victim(
+                           EventType.STABILIZED, 'regular'),
+                   'num_critical_stabilized': self.env.metrics_manager.get_num_victim(
+                           EventType.STABILIZED, 'critical')}
 
         # if step < self.episode_limit，padding
         for i in range(step, self.episode_limit):
@@ -254,16 +257,15 @@ class CommRolloutWorker:
         avail_u_next = avail_u[1:]
         avail_u = avail_u[:-1]
 
-        metrics = {'M1': self.env.metrics_manager.get_M1()}
-        from gym_multigrid.metrics import EventType
-        metrics['num_regular_evacuated'] = self.env.metrics_manager.get_num_victim(
-                EventType.EVACUATED, 'regular')
-        metrics['num_critical_evacuated'] = self.env.metrics_manager.get_num_victim(
-                EventType.EVACUATED, 'critical')
-        metrics['num_regular_stabilized'] = self.env.metrics_manager.get_num_victim(
-                EventType.STABILIZED, 'regular')
-        metrics['num_critical_stabilized'] = self.env.metrics_manager.get_num_victim(
-                EventType.STABILIZED, 'critical')
+        metrics = {'M1': self.env.metrics_manager.get_M1(),
+                   'num_regular_evacuated': self.env.metrics_manager.get_num_victim(
+                           EventType.EVACUATED, 'regular'),
+                   'num_critical_evacuated': self.env.metrics_manager.get_num_victim(
+                           EventType.EVACUATED, 'critical'),
+                   'num_regular_stabilized': self.env.metrics_manager.get_num_victim(
+                           EventType.STABILIZED, 'regular'),
+                   'num_critical_stabilized': self.env.metrics_manager.get_num_victim(
+                           EventType.STABILIZED, 'critical')}
 
         # if step < self.episode_limit，padding
         for i in range(step, self.episode_limit):
