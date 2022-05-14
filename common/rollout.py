@@ -2,13 +2,23 @@ import os.path
 
 import numpy as np
 import torch
-from gym_multigrid.envs.star_craft import StarCraftAPI
 from torch.distributions import one_hot_categorical
+from typing import Union
+
+try:
+    from gym_multigrid.envs.star_craft import StarCraftAPI
+except ImportError:
+    StarCraftAPI = None
+
+try:
+    from graph_env.env.saturn import SaturnGraph
+except ImportError:
+    SaturnGraph = None
 
 
 class RolloutWorker:
     def __init__(self, env, agents, args):
-        self.env: StarCraftAPI = env
+        self.env: Union[StarCraftAPI, SaturnGraph] = env
         self.agents = agents
         self.episode_limit = args.episode_limit
         self.n_actions = args.n_actions
