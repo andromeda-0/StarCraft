@@ -126,7 +126,8 @@ class RolloutWorker:
                    'num_regular_stabilized': self.env.metrics_manager.get_num_victim(
                            EventType.STABILIZED, 'regular'),
                    'num_critical_stabilized': self.env.metrics_manager.get_num_victim(
-                           EventType.STABILIZED, 'critical')}
+                           EventType.STABILIZED, 'critical'),
+                   'num_rubbles_cleaned': self.env.metrics_manager.get_num_rubble()}
 
         # if step < self.episode_limit，padding
         for i in range(step, self.episode_limit):
@@ -265,7 +266,8 @@ class CommRolloutWorker:
                    'num_regular_stabilized': self.env.metrics_manager.get_num_victim(
                            EventType.STABILIZED, 'regular'),
                    'num_critical_stabilized': self.env.metrics_manager.get_num_victim(
-                           EventType.STABILIZED, 'critical')}
+                           EventType.STABILIZED, 'critical'),
+                   'num_rubbles_cleaned': self.env.metrics_manager.get_num_rubble()}
 
         # if step < self.episode_limit，padding
         for i in range(step, self.episode_limit):

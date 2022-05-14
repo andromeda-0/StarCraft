@@ -27,10 +27,13 @@ class Runner:
             self.buffer = ReplayBuffer(args)
         self.args = args
 
-        # 用来保存plt和pkl
         self.save_path = self.args.result_dir + '/' + args.map + '/' + args.alg
         if not os.path.exists(self.save_path):
             os.makedirs(self.save_path)
+
+        self.log_path = self.args.log_dir + '/' + args.map + '/' + args.alg
+        if not os.path.exists(self.log_path):
+            os.makedirs(self.log_path)
 
         self.writer = SummaryWriter(self.save_path + '/' + str(self.args.run_id))
 
@@ -40,8 +43,8 @@ class Runner:
             while time_steps < self.args.n_steps:
                 # print('Run {}, time_steps {}'.format(num_run, time_steps))
                 if time_steps // self.args.evaluate_cycle > evaluate_steps:
-                    metrics, episode_reward = self.evaluate(time_steps)
-                    self.plt(time_steps, metrics, episode_reward)
+                    metrics = self.evaluate(time_steps)
+                    self.plt(time_steps, metrics)
                     evaluate_steps += 1
                 episodes = []
                 # 收集self.args.n_episodes个episodes
@@ -69,8 +72,8 @@ class Runner:
                                 min(self.buffer.current_size, self.args.batch_size))
                         self.agents.train(mini_batch, train_steps)
                         train_steps += 1
-        metrics, episode_reward = self.evaluate(time_steps)
-        self.plt(time_steps, metrics, episode_reward)
+        metrics = self.evaluate(time_steps)
+        self.plt(time_steps, metrics)
 
     def BC(self):
         print('Behavior Cloning...')
@@ -110,18 +113,14 @@ class Runner:
                     metrics[k] = np.zeros(self.args.evaluate_epoch)
 
                 metrics[k][epoch] = metrics_epoch[k]
+        metrics['rewards'] = episode_rewards
+        return metrics
 
-        return metrics, episode_rewards
-
-    def plt(self, num_steps, metrics, episode_reward):
+    def plt(self, num_steps, metrics):
         for k in metrics:
             self.writer.add_scalar(k + '/mean', metrics[k].mean(), num_steps)
             self.writer.add_scalar(k + '/std', metrics[k].std(), num_steps)
             self.writer.add_scalar(k + '/max', metrics[k].max(), num_steps)
             self.writer.add_scalar(k + '/min', metrics[k].min(), num_steps)
-
-        self.writer.add_scalar('rewards/mean', episode_reward.mean(), num_steps)
-        self.writer.add_scalar('rewards/std', episode_reward.std(), num_steps)
-        self.writer.add_scalar('rewards/max', episode_reward.max(), num_steps)
-        self.writer.add_scalar('rewards/min', episode_reward.min(), num_steps)
         self.writer.flush()
+        np.savez_compressed(self.log_path + '/' + str(num_steps) + '.npz', **metrics)
