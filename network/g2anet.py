@@ -110,5 +110,5 @@ class G2ANet(nn.Module):
         final_input = torch.cat([h_out, x], dim=-1)
         output = self.decoding(final_input)
 
-        return output, h_out
+        return output, h_out.detach()
 

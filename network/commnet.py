@@ -24,7 +24,7 @@ class CommNet(nn.Module):
 
         # 第一次经过f_obs得到h
         h_out = self.f_obs(obs_encoding, h_in)
-        h = None
+
         for k in range(self.args.k):  # 通信self.args.k次
             if k == 0:  # 初始化c为0
                 h = h_out
@@ -53,4 +53,4 @@ class CommNet(nn.Module):
         # 通信结束后计算每个agent的所有动作的权重，概率在agent.py中选择动作时计算
         weights = self.decoding(h)
 
-        return weights, h_out
+        return weights, h_out.detach()
