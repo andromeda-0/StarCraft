@@ -44,7 +44,7 @@ class COMA:
         self.eval_critic.to(self.args.device)
         self.target_critic.to(self.args.device)
 
-        self.model_dir = args.model_dir + '/' + args.alg + '/' + args.map
+        self.model_dir = args.model_dir + '/' + args.map + '/' + args.alg
         # 如果存在模型则加载模型
         if self.args.load_model:
             if os.path.exists(self.model_dir + '/rnn_params.pt'):
