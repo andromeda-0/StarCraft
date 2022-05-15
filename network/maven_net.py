@@ -43,7 +43,7 @@ class BootstrappedRNN(nn.Module):
 
         q = torch.bmm(h, hyper_w) + hyper_b
         q = q.view(-1, self.args.n_actions)
-        return q, h.detach()
+        return q, h
 
 
 # variational distribution for MI Loss， output q(z|sigma(tau))
