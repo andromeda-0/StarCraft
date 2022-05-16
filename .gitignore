@@ -1,6 +1,7 @@
 .idea
 /deprecated*/
 /replays*/
-/runs*/
 /BC_data/
 /model/
+/results*/
+/logs
