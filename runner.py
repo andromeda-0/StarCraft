@@ -27,15 +27,15 @@ class Runner:
             self.buffer = ReplayBuffer(args)
         self.args = args
 
-        self.save_path = self.args.result_dir + '/' + args.map + '/' + args.alg
+        self.save_path = self.args.result_dir + '/' + args.map + '/' + args.alg + '/' + args.run_id
         if not os.path.exists(self.save_path):
             os.makedirs(self.save_path)
 
-        self.log_path = self.args.log_dir + '/' + args.map + '/' + args.alg
+        self.log_path = self.args.log_dir + '/' + args.map + '/' + args.alg + '/' + args.run_id
         if not os.path.exists(self.log_path):
             os.makedirs(self.log_path)
 
-        self.writer = SummaryWriter(self.save_path + '/' + str(self.args.run_id))
+        self.writer = SummaryWriter(self.save_path)
 
     def run(self):
         time_steps, train_steps, evaluate_steps = 0, 0, -1
