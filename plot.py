@@ -68,8 +68,10 @@ def parse_logs(key_to_paths, max_steps=5e6):
 if __name__ == '__main__':
     data = parse_logs({
         'reinforce+commnet': 'logs/saturn.SaturnTopLeftFixed/reinforce+commnet/non_bc_5.16',
+        'coma+commnet': 'logs/saturn.SaturnTopLeftFixed/coma+commnet/non_bc_5.16',
         'iql': 'logs/saturn.SaturnTopLeftFixed/iql/non_bc_5.16',
-    }, 4.5e6)
+        'central_v': 'logs/saturn.SaturnTopLeftFixed/central_v'
+    }, 4e6)
     plot_vanilla(data, 'M1', smooth=0.6, mode='exp')
     # data = parse_logs({
     #     'coma': 'logs/saturn.SaturnTopLeftFixed/reinforce+commnet/non_bc_5.16',
