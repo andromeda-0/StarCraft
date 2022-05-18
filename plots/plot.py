@@ -1,15 +1,17 @@
+import json
 import os
+from typing import Union
 
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
-import seaborn as sns
 import pandas
+import seaborn as sns
 
 matplotlib.use('qt5agg')
 
 
-def plot_vanilla(data, key, smooth=1.0, title='', mode='window'):
+def plot_vanilla(data, key, smooth=1.0, title='', mode='window', ci: Union[int, str] = 95):
     """
 
     """
@@ -32,10 +34,12 @@ def plot_vanilla(data, key, smooth=1.0, title='', mode='window'):
     elif mode == 'exp':
         data[key] = data[key].ewm(alpha=1 - smooth).mean()
 
-    sns.lineplot(data=data, x='time', y=key, hue='key')
+    sns.lineplot(data=data, x='time', y=key, hue='key', ci=ci)
     plt.xlabel('steps')
     plt.ylabel(key)
     plt.title(title)
+    plt.legend(loc='upper center', ncol=6, handlelength=1,
+               mode="expand", borderaxespad=0., prop={'size': 13})
     sns.despine()
     plt.tight_layout()
     plt.show()
@@ -43,7 +47,8 @@ def plot_vanilla(data, key, smooth=1.0, title='', mode='window'):
 
 def gather_log(data_dir, key, max_steps=5e6):
     data = {'time': []}
-    item_list = sorted([int(x[:-4]) for x in os.listdir(data_dir)])
+    item_list = sorted([int(x[:-4]) for x in os.listdir(data_dir) if
+                        os.path.isfile(os.path.join(data_dir, x))])
     num_items = int(max_steps) // (item_list[1] - item_list[0])
     for i, item in enumerate(item_list):
         if i >= num_items:
@@ -66,13 +71,11 @@ def parse_logs(key_to_paths, max_steps=5e6):
 
 
 if __name__ == '__main__':
-    data = parse_logs({
-        'reinforce+commnet': 'logs/saturn.SaturnTopLeftFixed/reinforce+commnet/non_bc_5.16',
-        'coma+commnet': 'logs/saturn.SaturnTopLeftFixed/coma+commnet/non_bc_5.16',
-        'iql': 'logs/saturn.SaturnTopLeftFixed/iql/non_bc_5.16',
-        'central_v': 'logs/saturn.SaturnTopLeftFixed/central_v'
-    }, 4e6)
-    plot_vanilla(data, 'M1', smooth=0.6, mode='exp')
+    with open('plots/5.16.json') as f:
+        config_dict = json.load(f)
+
+    data = parse_logs(config_dict, 4.05e6)
+    plot_vanilla(data, 'M1', smooth=5, mode='window')
     # data = parse_logs({
     #     'coma': 'logs/saturn.SaturnTopLeftFixed/reinforce+commnet/non_bc_5.16',
     #     'coma+commnet': 'logs/saturn.SaturnTopLeftFixed/iql/non_bc_5.16',

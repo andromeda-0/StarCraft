@@ -1,0 +1,6 @@
+{
+  "reinforce+commnet": "logs/saturn.SaturnTopLeftFixed/reinforce+commnet/non_bc_5.16",
+  "coma+commnet": "logs/saturn.SaturnTopLeftFixed/coma+commnet/non_bc_5.16",
+  "iql": "logs/saturn.SaturnTopLeftFixed/iql/non_bc_5.16",
+  "central_v": "logs/saturn.SaturnTopLeftFixed/central_v"
+}
