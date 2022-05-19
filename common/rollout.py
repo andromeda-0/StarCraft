@@ -9,15 +9,15 @@ try:
     from gym_multigrid.envs.star_craft import StarCraftAPI
     from gym_multigrid.metrics import EventType
 except ImportError:
-    StarCraftAPI = None
-    EventType = None
+    #### TODO: add option to specify which env to use
+    # For now, make sure they do not co-exist in venv
+    pass
 
 try:
     from graph_env.env.saturn import SaturnGraph
     from graph_env.metrics import EventType
 except ImportError:
-    SaturnGraph = None
-    EventType = None
+    pass
 
 
 class RolloutWorker:
