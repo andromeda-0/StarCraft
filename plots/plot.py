@@ -71,13 +71,18 @@ def parse_logs(key_to_paths, max_steps=5e6):
 
 
 if __name__ == '__main__':
-    with open('plots/5.16.json') as f:
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('config_path')
+    parser.add_argument('--smooth', default=0.9, type=float)
+    parser.add_argument('--mode', default='exp')
+    parser.add_argument('--steps', default=3.8e6, type=float)
+    parser.add_argument('--key', default='M1')
+    args = parser.parse_args()
+
+    with open(args.config_path) as f:
         config_dict = json.load(f)
 
-    data = parse_logs(config_dict, 4.05e6)
-    plot_vanilla(data, 'M1', smooth=5, mode='window')
-    # data = parse_logs({
-    #     'coma': 'logs/saturn.SaturnTopLeftFixed/reinforce+commnet/non_bc_5.16',
-    #     'coma+commnet': 'logs/saturn.SaturnTopLeftFixed/iql/non_bc_5.16',
-    # }, 1.2e6)
-    # plot_vanilla(data, 'M1', smooth=0.001, mode='exp')
+    data = parse_logs(config_dict, args.steps)
+    plot_vanilla(data, args.key, smooth=args.smooth, mode=args.mode)
