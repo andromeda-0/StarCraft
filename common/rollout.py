@@ -162,11 +162,11 @@ class RolloutWorker:
             self.epsilon = epsilon
         if self.args.alg == 'maven':
             episode['z'] = np.array([maven_z.copy()])
-        if evaluate and episode_num == self.args.evaluate_epoch - 1 and self.args.replay_dir != '':
+        if evaluate and self.args.replay_dir != '':
             replay_dir = self.args.replay_dir + '/' + self.args.map + '/' + self.args.alg
             if not os.path.exists(replay_dir):
                 os.makedirs(replay_dir)
-            np.savez_compressed(os.path.join(replay_dir, '%d.npz' % time_steps),
+            np.savez_compressed(os.path.join(replay_dir, '%d_%d.npz' % (time_steps, episode_num)),
                                 **(self.env.replay))
             self.env.close()
         return episode, episode_reward, metrics, step
