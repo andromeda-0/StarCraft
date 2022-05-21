@@ -1,4 +1,5 @@
 #!/bin/bash
+tmux new -d -s PORight_Heterogeneous_reinforce
 tmux send-keys -t PORight_Heterogeneous_reinforce "cd ..; conda activate gym_graph; python main.py --alg=reinforce --device 5 --map saturn.PORight_Heterogeneous --run_id 5.21 --n_steps 20000000" Enter
 tmux new -d -s PORight_Heterogeneous_reinforce_commnet
 tmux send-keys -t PORight_Heterogeneous_reinforce_commnet "cd ..; conda activate gym_graph; python main.py --alg=reinforce+commnet --device 5 --map saturn.PORight_Heterogeneous --run_id 5.21 --n_steps 20000000" Enter
