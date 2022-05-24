@@ -40,10 +40,11 @@ def plot_vanilla(data, key, smooth=1.0, title='', mode='window', ci: Union[int, 
     plt.ylabel(key)
     plt.title(title)
 
-    plt.legend(loc='upper center', ncol=6, handlelength=1,
-               mode="expand", borderaxespad=0., prop={'size': 13})
+    # plt.legend(loc='upper center', ncol=6, handlelength=1,
+    #            mode="expand", borderaxespad=0., prop={'size': 13})
+    plt.legend(loc='best')
     sns.despine()
-    plt.tight_layout()
+    # plt.tight_layout()
     plt.show()
 
 

@@ -1,8 +1,8 @@
 paths:
   reinforce: logs/saturn.POTopLeft_Heterogeneous/reinforce/5.20
   reinforce+commnet: logs/saturn.POTopLeft_Heterogeneous/reinforce+commnet/5.20
-  qmix: logs/saturn.POTopLeft_Heterogeneous/qmix/5.20
-  maven: logs/saturn.POTopLeft_Heterogeneous/maven/5.20
+#  qmix: logs/saturn.POTopLeft_Heterogeneous/qmix/5.20
+#  maven: logs/saturn.POTopLeft_Heterogeneous/maven/5.20
 title:
   'Algorithm Comparison, Env: TopLeft of Saturn (Randomized), Metrics: M1'
 metric:
