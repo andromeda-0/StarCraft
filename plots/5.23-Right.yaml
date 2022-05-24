@@ -1,0 +1,13 @@
+paths:
+  reinforce: logs/saturn.PORight_Heterogeneous/reinforce/5.21
+  reinforce+commnet: logs/saturn.PORight_Heterogeneous/reinforce+commnet/5.21
+  qmix: logs/saturn.PORight_Heterogeneous/qmix/5.21
+  maven: logs/saturn.PORight_Heterogeneous/maven/5.21
+title:
+  'Algorithm Comparison, Env: Right of Saturn (Randomized), Metrics: M1'
+metric:
+  M1
+smooth_mode:
+  exp
+smooth_val:
+  0.6

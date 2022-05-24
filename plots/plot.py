@@ -1,4 +1,3 @@
-import json
 import os
 from typing import Union
 
@@ -16,7 +15,8 @@ def plot_vanilla(data, key, smooth=1.0, title='', mode='window', ci: Union[int, 
 
     """
     sns.set_style("whitegrid", {'axes.grid': True, 'axes.edgecolor': 'black'})
-    plt.figure()
+    fig = plt.figure()
+    fig.canvas.set_window_title(title.replace(':', '-').replace(' ', '-'))
 
     if smooth > 1 and mode == 'window':
         """
@@ -38,6 +38,7 @@ def plot_vanilla(data, key, smooth=1.0, title='', mode='window', ci: Union[int, 
     plt.xlabel('steps')
     plt.ylabel(key)
     plt.title(title)
+
     plt.legend(loc='upper center', ncol=6, handlelength=1,
                mode="expand", borderaxespad=0., prop={'size': 13})
     sns.despine()
@@ -46,22 +47,32 @@ def plot_vanilla(data, key, smooth=1.0, title='', mode='window', ci: Union[int, 
 
 
 def gather_log(data_dir, key, max_steps=5e6):
-    data = {'time': []}
+    data = dict()
     item_list = sorted([int(x[:-4]) for x in os.listdir(data_dir) if
                         os.path.isfile(os.path.join(data_dir, x))])
     num_items = int(max_steps) // (item_list[1] - item_list[0])
+
+    sample_data = np.load(os.path.join(data_dir, str(item_list[0]) + '.npz'))
+    v_shape = list(sample_data.values())[0].shape[0]
+    for k, v in sample_data.items():
+        data[k] = np.empty(num_items * v_shape, dtype=v.dtype)
+        data[k][:] = np.nan
+    data['time'] = np.zeros(num_items * v_shape, dtype=np.float)
+
     for i, item in enumerate(item_list):
         if i >= num_items:
             break
 
         data_item = np.load(os.path.join(data_dir, str(item) + '.npz'))
         for k, v in data_item.items():
-            if k not in data:
-                data[k] = np.zeros(shape=num_items * v.shape[0], dtype=v.dtype)
-            data[k][i * v.shape[0]:(i + 1) * v.shape[0]] = v
-        data['time'].extend([item] * v.shape[0])
+            # if k not in data:
+            #     data[k] = np.zeros(shape=num_items * v.shape[0], dtype=v.dtype)
+            data[k][i * v_shape:(i + 1) * v_shape] = v
+        # data['time'].extend([item] * v.shape[0])
+        data['time'][i * v_shape:(i + 1) * v_shape] = item
     data['key'] = [key for _ in range(len(data['time']))]
-    return pandas.DataFrame(data)
+    df = pandas.DataFrame(data)
+    return df
 
 
 def parse_logs(key_to_paths, max_steps=5e6):
@@ -72,17 +83,23 @@ def parse_logs(key_to_paths, max_steps=5e6):
 
 if __name__ == '__main__':
     import argparse
+    import yaml
 
     parser = argparse.ArgumentParser()
     parser.add_argument('config_path')
-    parser.add_argument('--smooth', default=0.9, type=float)
-    parser.add_argument('--mode', default='exp')
-    parser.add_argument('--steps', default=3.8e6, type=float)
-    parser.add_argument('--key', default='M1')
+
     args = parser.parse_args()
 
     with open(args.config_path) as f:
-        config_dict = json.load(f)
+        config_dict = yaml.safe_load(f)
 
-    data = parse_logs(config_dict, args.steps)
-    plot_vanilla(data, args.key, smooth=args.smooth, mode=args.mode)
+    if 'steps' not in config_dict:
+        config_dict['steps'] = int(2e7)
+    if 'smooth_val' not in config_dict:
+        config_dict['smooth_val'] = 0
+    if 'smooth_mode' not in config_dict:
+        config_dict['smooth_mode'] = 'window'
+
+    data = parse_logs(config_dict['paths'], config_dict['steps'])
+    plot_vanilla(data, config_dict['metric'], smooth=config_dict['smooth_val'],
+                 mode=config_dict['smooth_mode'], title=config_dict['title'])
