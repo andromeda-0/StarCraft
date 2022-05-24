@@ -1,4 +1,7 @@
-.idea
+__pycache__/
+*.pyc
+*.egg-info/
+/.idea/
 /deprecated*/
 /replays*/
 /BC_data/

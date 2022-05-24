@@ -1,0 +1,13 @@
+paths:
+  reinforce (Fully Observable, Fixed): logs/saturn.FORightFixed_Heterogeneous/reinforce/5.21
+  reinforce (Fully Observable, Random): logs/saturn.FORight_Heterogeneous/reinforce/5.21
+  reinforce (Partially Observable, Fixed): logs/saturn.PORightFixed_Heterogeneous/reinforce/5.21
+  reinforce (Partially Observable, Random): logs/saturn.PORight_Heterogeneous/reinforce/5.21
+title:
+  'Full/Partial Observability. Env: Right of Saturn, Metrics: M1'
+metric:
+  M1
+smooth_mode:
+  exp
+smooth_val:
+  0.6
