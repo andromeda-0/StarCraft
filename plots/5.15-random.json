@@ -1,6 +1,0 @@
-{
-  "Randomized Env: reinforce+commnet": "logs/saturn.SaturnTopLeft/reinforce+commnet",
-  "Fixed Env: reinforce+commnet": "logs/saturn.SaturnTopLeftFixed/reinforce+commnet/non_bc_5.16",
-  "Randomized Env: iql": "logs/saturn.SaturnTopLeft/iql",
-  "Fixed Env: iql": "logs/saturn.SaturnTopLeftFixed/iql/non_bc_5.16"
-}
