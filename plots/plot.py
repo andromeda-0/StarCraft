@@ -8,6 +8,7 @@ import pandas
 import seaborn as sns
 
 matplotlib.use('qt5agg')
+matplotlib.rcParams["savefig.directory"] = os.path.dirname(__file__)
 
 
 def plot_vanilla(data, key, smooth=1.0, title='', mode='window', ci: Union[int, str] = 95):
@@ -16,7 +17,7 @@ def plot_vanilla(data, key, smooth=1.0, title='', mode='window', ci: Union[int, 
     """
     sns.set_style("whitegrid", {'axes.grid': True, 'axes.edgecolor': 'black'})
     fig = plt.figure()
-    fig.canvas.set_window_title(title.replace(':', '-').replace(' ', '-'))
+    fig.canvas.manager.set_window_title(title.replace(':', '-').replace(' ', '-'))
 
     if smooth > 1 and mode == 'window':
         """
@@ -57,7 +58,7 @@ def gather_log(data_dir, key, max_steps=5e6):
     for k, v in sample_data.items():
         data[k] = np.empty(num_items * v_shape, dtype=v.dtype)
         data[k][:] = np.nan
-    data['time'] = np.zeros(num_items * v_shape, dtype=np.float)
+    data['time'] = np.zeros(num_items * v_shape, dtype=float)
 
     for i, item in enumerate(item_list):
         if i >= num_items:
