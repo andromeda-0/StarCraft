@@ -65,6 +65,8 @@ class RolloutWorker:
             # time.sleep(0.2)
             obs = self.env.get_obs()
             state = self.env.get_state()
+            if self.args.cat_state:
+                obs = [np.concatenate([o, state]) for o in obs]
             actions, avail_actions, actions_onehot = [], [], []
             for agent_id in range(self.n_agents):
                 avail_action = self.env.get_avail_agent_actions(agent_id)
@@ -103,6 +105,8 @@ class RolloutWorker:
         # last obs
         obs = self.env.get_obs()
         state = self.env.get_state()
+        if self.args.cat_state:
+            obs = [np.concatenate([o, state]) for o in obs]
         o.append(obs)
         s.append(state)
         o_next = o[1:]
@@ -206,6 +210,8 @@ class CommRolloutWorker:
             # time.sleep(0.2)
             obs = self.env.get_obs()
             state = self.env.get_state()
+            if self.args.cat_state:
+                obs = [np.concatenate([o, state]) for o in obs]
             actions, avail_actions, actions_onehot = [], [], []
 
             # get the weights of all actions for all agents
@@ -243,6 +249,8 @@ class CommRolloutWorker:
         # last obs
         obs = self.env.get_obs()
         state = self.env.get_state()
+        if self.args.cat_state:
+            obs = [np.concatenate([o, state]) for o in obs]
         o.append(obs)
         s.append(state)
         o_next = o[1:]

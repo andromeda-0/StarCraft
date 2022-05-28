@@ -50,6 +50,7 @@ def get_common_args():
     parser.add_argument('--BC_batch_size', default=32, type=int)
     parser.add_argument('--BC_save_interval', default=20, type=int)
     parser.add_argument('--lr_actor', default=1e-4, type=float)
+    parser.add_argument('--cat_state', action='store_true')
     args = parser.parse_args()
     # noinspection PyTypeChecker
     args.device = torch.device('cuda:' + str(args.device)) if args.device >= 0 else torch.device(

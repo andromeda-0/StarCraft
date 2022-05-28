@@ -35,7 +35,7 @@ if __name__ == '__main__':
     args.n_actions = env_info["n_actions"]
     args.n_agents = env_info["n_agents"]
     args.state_shape = env_info["state_shape"]
-    args.obs_shape = env_info["obs_shape"]
+    args.obs_shape = env_info["obs_shape"] + (args.state_shape if args.cat_state else 0)
     args.episode_limit = env_info["episode_limit"]
     runner = Runner(env, args)
     if args.BC:
