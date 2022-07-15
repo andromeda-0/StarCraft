@@ -18,4 +18,4 @@ tmux send-keys -t POLeft_Heterogeneous_reinforce_g2anet_cat "cd ..; conda activa
 tmux new -d -s POLeft_Heterogeneous_qmix_cat
 tmux send-keys -t POLeft_Heterogeneous_qmix_cat "cd ..; conda activate gym_graph; python main.py --alg=qmix --device 2 --map saturn.POLeft_Heterogeneous --run_id 7.14-cat --n_steps 200000000 --cat_state --gamma 0.7" Enter
 tmux new -d -s POLeft_Heterogeneous_maven_cat
-tmux send-keys -t POLeft_Heterogeneous_maven_cat "cd ..; conda activate gym_graph; python main.py --alg=maven --device 5 --map saturn.POLeft_Heterogeneous --run_id 7.14-cat --n_steps 200000000 --cat_state --gamma 0.7" Enter
+tmux send-keys -t POLeft_Heterogeneous_maven_cat "cd ..; conda activate gym_graph; python main.py --alg=maven --device 7 --map saturn.POLeft_Heterogeneous --run_id 7.14-cat --n_steps 200000000 --cat_state --gamma 0.7" Enter
