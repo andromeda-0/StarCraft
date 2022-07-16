@@ -43,7 +43,7 @@ def get_common_args():
                         help='whether to evaluate the model')
     parser.add_argument('--device', type=int, help='GPU ID', default='0')
     parser.add_argument('--run_id', default='0')
-    parser.add_argument('--save_cycle', type=int, default=10, help='save')
+    parser.add_argument('--save_cycle', type=int, default=10000, help='save')
     parser.add_argument('--BC', action='store_true')
     parser.add_argument('--BC_data_dir', default='BC_data/Yellow3')
     parser.add_argument('--BC_epochs', default=200, type=int)
