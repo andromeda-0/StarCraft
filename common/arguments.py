@@ -106,7 +106,7 @@ def get_mixer_args(args):
     args.train_steps = 1
 
     # experience replay
-    args.batch_size = 32
+    args.batch_size = 4
     args.buffer_size = 500
 
     # how often to save the model
