@@ -177,5 +177,5 @@ class VDN:
         if not os.path.exists(self.model_dir):
             os.makedirs(self.model_dir)
         torch.save(self.eval_vdn_net.state_dict(),
-                   self.model_dir + '/' + num + '_vdn_net_params.pt')
-        torch.save(self.eval_rnn.state_dict(), self.model_dir + '/' + num + '_rnn_net_params.pt')
+                   self.model_dir + '/' +'_vdn_net_params.pt')
+        torch.save(self.eval_rnn.state_dict(), self.model_dir + '/' +'_rnn_net_params.pt')
