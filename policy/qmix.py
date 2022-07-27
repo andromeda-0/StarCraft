@@ -169,5 +169,5 @@ class QMIX:
         num = str(train_step)
         if not os.path.exists(self.model_dir):
             os.makedirs(self.model_dir)
-        torch.save(self.eval_qmix_net.state_dict(), self.model_dir + '/' +'_qmix_net_params.pt')
-        torch.save(self.eval_rnn.state_dict(),  self.model_dir + '/' +'_rnn_net_params.pt')
+        torch.save(self.eval_qmix_net.state_dict(), self.model_dir + '/' + num + '_qmix_net_params.pt')
+        torch.save(self.eval_rnn.state_dict(),  self.model_dir + '/' + num + '_rnn_net_params.pt')

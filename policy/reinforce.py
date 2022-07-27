@@ -172,7 +172,7 @@ class Reinforce:
         num = str(train_step)
         if not os.path.exists(self.model_dir):
             os.makedirs(self.model_dir)
-        torch.save(self.eval_rnn.state_dict(), self.model_dir + '/' + '_rnn_params.pt')
+        torch.save(self.eval_rnn.state_dict(), self.model_dir + '/' + num + '_rnn_params.pt')
 
     def save_BC_model(self, epoch):
         dir_to_save = os.path.join(self.model_dir, str(self.args.run_id))
