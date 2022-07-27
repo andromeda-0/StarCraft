@@ -44,6 +44,8 @@ def get_common_args():
     parser.add_argument('--device', type=int, help='GPU ID', default='0')
     parser.add_argument('--run_id', default='0')
     parser.add_argument('--save_cycle', type=int, default=100000, help='save')
+    parser.add_argument('--load_train_steps', type=int, default=-1)
+    parser.add_argument('--load_time_steps', type=int, default=-1)
     parser.add_argument('--BC', action='store_true')
     parser.add_argument('--BC_data_dir', default='BC_data/Yellow3')
     parser.add_argument('--BC_epochs', default=200, type=int)

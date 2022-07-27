@@ -25,8 +25,9 @@ class IQL:
         self.model_dir = args.model_dir + '/' + args.map + '/' + args.alg + '/' + args.run_id
         # 如果存在模型则加载模型
         if self.args.load_model:
-            if os.path.exists(self.model_dir + '/rnn_net_params.pt'):
-                path_rnn = self.model_dir + '/rnn_net_params.pt'
+            num = str(self.args.load_train_steps)
+            if os.path.exists(self.model_dir + num + '/rnn_net_params.pt'):
+                path_rnn = self.model_dir + num + '/rnn_net_params.pt'
                 map_location = self.args.device
                 self.eval_rnn.load_state_dict(torch.load(path_rnn, map_location=map_location))
                 print('Successfully load the model: {}'.format(path_rnn))
@@ -65,7 +66,7 @@ class IQL:
                                                                                 self.n_agents), \
                                                   batch['avail_u'], \
                                                   batch['avail_u_next'], batch['terminated'].repeat(
-            1, 1, self.n_agents)
+                1, 1, self.n_agents)
         mask = (1 - batch["padded"].float()).repeat(1, 1,
                                                     self.n_agents)  # 用来把那些填充的经验的TD-error置0，从而不让它们影响到学习
 
@@ -122,7 +123,7 @@ class IQL:
             # agent编号恰好就是一个单位矩阵，即对角线为1，其余为0
             inputs.append(torch.eye(self.args.n_agents).unsqueeze(0).expand(episode_num, -1, -1))
             inputs_next.append(
-                torch.eye(self.args.n_agents).unsqueeze(0).expand(episode_num, -1, -1))
+                    torch.eye(self.args.n_agents).unsqueeze(0).expand(episode_num, -1, -1))
         # 要把obs中的三个拼起来，并且要把episode_num个episode、self.args.n_agents个agent的数据拼成40条(40,96)的数据，
         # 因为这里所有agent共享一个神经网络，每条数据中带上了自己的编号，所以还是自己的数据
         inputs = torch.cat([x.reshape(episode_num * self.args.n_agents, -1) for x in inputs], dim=1)

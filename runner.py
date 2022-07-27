@@ -39,6 +39,12 @@ class Runner:
 
     def run(self):
         time_steps, train_steps, evaluate_steps = 0, 0, -1
+
+        if self.args.load_train_steps > 0:
+            train_steps = self.args.load_train_steps
+        if self.args.load_time_steps > 0:
+            time_steps = self.args.load_time_steps
+
         with tqdm(total=self.args.n_steps) as pbar:
             while time_steps < self.args.n_steps:
                 # print('Run {}, time_steps {}'.format(num_run, time_steps))
