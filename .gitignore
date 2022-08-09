@@ -9,3 +9,5 @@ __pycache__/
 /results*/
 /runs/
 /logs/
+*.png
+*.yaml
